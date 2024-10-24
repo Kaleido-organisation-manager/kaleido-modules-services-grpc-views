@@ -1,0 +1,10 @@
+bin/
+obj/
+*.Development.json
+*.Staging.json
+.vscode
+out/
+
+TestResults/
+
+tools
