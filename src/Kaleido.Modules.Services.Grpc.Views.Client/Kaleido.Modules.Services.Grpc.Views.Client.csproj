@@ -6,4 +6,26 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <Company>Kaleido Organisation Manager</Company>
+    <PackageDescription>Kaleido.Modules.Services.Grpc.Views</PackageDescription>
+    <RepositoryUrl>https://github.com/Kaleido-organisation-manager/kaleido-modules-services-grpc-views</RepositoryUrl>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <Protobuf Include="..\Proto\models.proto" GrpcServices="None" ProtoRoot="..\Proto"/>
+    <Protobuf Include="..\Proto\views-service.proto" GrpcServices="Client" ProtoRoot="..\Proto"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Protobuf" Version="3.28.2" />
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.66.0" />
+    <PackageReference Include="Grpc.Net.Client" Version="2.66.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.66.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

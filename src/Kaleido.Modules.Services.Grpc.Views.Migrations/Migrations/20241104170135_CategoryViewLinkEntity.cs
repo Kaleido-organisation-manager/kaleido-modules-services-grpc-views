@@ -1,0 +1,35 @@
+﻿using System;
+using Microsoft.EntityFrameworkCore.Migrations;
+
+#nullable disable
+
+namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
+{
+    /// <inheritdoc />
+    public partial class CategoryViewLinkEntity : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.CreateTable(
+                name: "CategoryViewLinks",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    CategoryKey = table.Column<string>(type: "varchar(36)", nullable: false),
+                    ViewKey = table.Column<string>(type: "varchar(36)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CategoryViewLinks", x => x.Id);
+                });
+        }
+
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+        {
+            migrationBuilder.DropTable(
+                name: "CategoryViewLinks");
+        }
+    }
+}
