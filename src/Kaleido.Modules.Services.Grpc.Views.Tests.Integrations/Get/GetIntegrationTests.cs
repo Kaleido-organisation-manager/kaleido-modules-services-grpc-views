@@ -13,6 +13,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Get
         public GetIntegrationTests(InfrastructureFixture fixture)
         {
             _fixture = fixture;
+            _fixture.ClearDatabase().Wait();
         }
 
         [Fact]

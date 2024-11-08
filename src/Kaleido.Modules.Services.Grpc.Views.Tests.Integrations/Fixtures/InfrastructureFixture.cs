@@ -4,6 +4,8 @@ using DotNet.Testcontainers.Configurations;
 using DotNet.Testcontainers.Containers;
 using DotNet.Testcontainers.Images;
 using Grpc.Net.Client;
+using Kaleido.Grpc.Categories;
+using Kaleido.Grpc.Views;
 using Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Fixtures.Extensions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -197,15 +199,22 @@ public class InfrastructureFixture : IDisposable
         DisposeAsync().Wait();
     }
 
-    public Task ClearDatabase()
+    public async Task ClearDatabase()
     {
-        return Task.CompletedTask;
+        // return Task.CompletedTask;
         // TODO: Implement
-        // var categories = await Client.GetAllCategoriesAsync(new EmptyRequest());
-        // foreach (var category in categories.Categories)
-        // {
-        //     if (category.Revision.Action != "Deleted")
-        //         await Client.DeleteCategoryAsync(new CategoryRequest { Key = category.Key });
-        // }
+        var categories = await CategoriesClient.GetAllCategoriesAsync(new Kaleido.Grpc.Categories.EmptyRequest());
+        foreach (var category in categories.Categories)
+        {
+            if (category.Revision.Action != "Deleted")
+                await CategoriesClient.DeleteCategoryAsync(new CategoryRequest { Key = category.Key });
+        }
+
+        var views = await Client.GetAllViewsAsync(new Kaleido.Grpc.Views.EmptyRequest());
+        foreach (var view in views.Views)
+        {
+            if (view.Revision.Action != "Deleted")
+                await Client.DeleteViewAsync(new ViewRequest { Key = view.Key });
+        }
     }
 }

@@ -12,6 +12,7 @@ public class DeleteIntegrationTests : IClassFixture<InfrastructureFixture>
     public DeleteIntegrationTests(InfrastructureFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearDatabase().Wait();
     }
 
     [Fact]

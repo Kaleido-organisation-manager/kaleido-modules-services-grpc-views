@@ -12,6 +12,7 @@ public class CreateIntegrationTests : IClassFixture<InfrastructureFixture>
     public CreateIntegrationTests(InfrastructureFixture fixture)
     {
         _fixture = fixture;
+        _fixture.ClearDatabase().Wait();
     }
 
     [Fact]
