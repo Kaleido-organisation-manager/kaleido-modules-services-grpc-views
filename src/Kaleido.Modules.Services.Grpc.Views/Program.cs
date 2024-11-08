@@ -8,6 +8,8 @@ using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.Common.Services;
 using Kaleido.Modules.Services.Grpc.Views.Common.Validators;
 using Kaleido.Modules.Services.Grpc.Views.Create;
+using Kaleido.Modules.Services.Grpc.Views.Delete;
+using Kaleido.Modules.Services.Grpc.Views.Get;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,6 +51,14 @@ builder.Services.AddLifeCycleHandler<CategoryViewLinkEntity, CategoryViewLinkRev
 // Create
 builder.Services.AddScoped<ICreateManager, CreateManager>();
 builder.Services.AddScoped<ICreateHandler, CreateHandler>();
+
+// Delete
+builder.Services.AddScoped<IDeleteManager, DeleteManager>();
+builder.Services.AddScoped<IDeleteHandler, DeleteHandler>();
+
+// Get
+builder.Services.AddScoped<IGetManager, GetManager>();
+builder.Services.AddScoped<IGetHandler, GetHandler>();
 
 // Add services to the container.
 builder.Services.AddGrpc();
