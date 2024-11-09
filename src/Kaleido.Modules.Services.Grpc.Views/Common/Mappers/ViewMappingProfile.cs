@@ -1,4 +1,5 @@
 using AutoMapper;
+using Google.Protobuf.WellKnownTypes;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Grpc.Views;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
@@ -32,5 +33,7 @@ public class ViewMappingProfile : Profile
         CreateMap<BaseRevisionEntity, BaseRevision>();
         CreateMap<CategoryViewLinkRevisionEntity, BaseRevision>();
         CreateMap<ViewRevisionEntity, BaseRevision>();
+        CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
+        CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
     }
 }

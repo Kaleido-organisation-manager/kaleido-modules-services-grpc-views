@@ -13,6 +13,7 @@ using Kaleido.Modules.Services.Grpc.Views.Get;
 using Kaleido.Modules.Services.Grpc.Views.GetAll;
 using Kaleido.Modules.Services.Grpc.Views.GetAllByName;
 using Kaleido.Modules.Services.Grpc.Views.GetAllRevisions;
+using Kaleido.Modules.Services.Grpc.Views.GetRevision;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -74,6 +75,10 @@ builder.Services.AddScoped<IGetAllByNameHandler, GetAllByNameHandler>();
 // Get All Revisions
 builder.Services.AddScoped<IGetAllRevisionsManager, GetAllRevisionsManager>();
 builder.Services.AddScoped<IGetAllRevisionsHandler, GetAllRevisionsHandler>();
+
+// Get Revision
+builder.Services.AddScoped<IGetRevisionManager, GetRevisionManager>();
+builder.Services.AddScoped<IGetRevisionHandler, GetRevisionHandler>();
 
 // Add services to the container.
 builder.Services.AddGrpc();
