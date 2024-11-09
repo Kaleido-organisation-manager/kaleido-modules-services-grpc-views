@@ -23,16 +23,9 @@ public class DeleteManager : IDeleteManager
         Guid key,
         CancellationToken cancellationToken = default)
     {
-        EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>? viewResult = null;
-        try
-        {
-            viewResult = await _viewLifecycleHandler.DeleteAsync(key, cancellationToken);
-        }
-        catch (RevisionNotFoundException)
-        {
-            return (null, Array.Empty<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>());
-        }
-        catch (EntityNotFoundException)
+        var requestedView = await _viewLifecycleHandler.GetAsync(key, cancellationToken: cancellationToken);
+
+        if (requestedView == null)
         {
             return (null, Array.Empty<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>());
         }
@@ -44,12 +37,14 @@ public class DeleteManager : IDeleteManager
         var resultLinks = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
         foreach (var categoryViewLink in categoryViewLinks)
         {
-            var result = await _categoryViewLinkLifecycleHandler.DeleteAsync(categoryViewLink.Key, cancellationToken);
+            var result = await _categoryViewLinkLifecycleHandler.DeleteAsync(categoryViewLink.Key, cancellationToken: cancellationToken);
             if (result != null)
             {
                 resultLinks.Add(result);
             }
         }
+
+        var viewResult = await _viewLifecycleHandler.DeleteAsync(key, cancellationToken: cancellationToken);
 
         return (viewResult, resultLinks);
     }

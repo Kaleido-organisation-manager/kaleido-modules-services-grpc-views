@@ -28,7 +28,7 @@ public class DeleteManagerTests
         var key = Guid.NewGuid();
         var viewLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<ViewEntity, ViewRevisionEntity>>();
         viewLifecycleHandlerMock
-            .Setup(x => x.DeleteAsync(key, It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteAsync(key, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new EntityNotFoundException("Not found"));
 
         // Act
@@ -70,7 +70,7 @@ public class DeleteManagerTests
 
         var viewLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<ViewEntity, ViewRevisionEntity>>();
         viewLifecycleHandlerMock
-            .Setup(x => x.DeleteAsync(key, It.IsAny<CancellationToken>()))
+            .Setup(x => x.DeleteAsync(key, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(viewResult);
 
         var categoryViewLinkLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
@@ -79,8 +79,8 @@ public class DeleteManagerTests
             .ReturnsAsync(categoryViewLinkResults);
 
         categoryViewLinkLifecycleHandlerMock
-            .Setup(x => x.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((Guid linkKey, CancellationToken _) =>
+            .Setup(x => x.DeleteAsync(It.IsAny<Guid>(), It.IsAny<CategoryViewLinkRevisionEntity?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Guid linkKey, CategoryViewLinkRevisionEntity? _, CancellationToken _) =>
                 categoryViewLinkResults.First(r => r.Key == linkKey));
 
         // Act

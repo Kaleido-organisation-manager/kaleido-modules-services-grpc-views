@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 {
-    [DbContext(typeof(ViewRevisionDbContext))]
-    [Migration("20241104170134_ViewRevision")]
-    partial class ViewRevision
+    [DbContext(typeof(ViewEntityDbContext))]
+    [Migration("20241109160152_ViewEntity")]
+    partial class ViewEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,33 +25,18 @@ namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Kaleido.Modules.Services.Grpc.Views.Common.Models.ViewRevisionEntity", b =>
+            modelBuilder.Entity("Kaleido.Modules.Services.Grpc.Views.Common.Models.ViewEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("Action")
+                    b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("varchar(8)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid>("EntityId")
-                        .HasColumnType("uuid");
-
-                    b.Property<string>("Key")
-                        .IsRequired()
-                        .HasColumnType("varchar(36)");
-
-                    b.Property<int>("Revision")
-                        .HasColumnType("int");
+                        .HasColumnType("varchar(100)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("Key");
-
-                    b.ToTable("ViewRevisions", (string)null);
+                    b.ToTable("Views", (string)null);
                 });
 #pragma warning restore 612, 618
         }

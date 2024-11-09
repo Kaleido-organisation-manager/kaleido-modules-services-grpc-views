@@ -20,20 +20,26 @@ public class CreateManager : ICreateManager
 
     public async Task<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)> CreateAsync(ViewEntity viewEntity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken = default)
     {
-        var viewResult = await _viewLifecycleHandler.CreateAsync(viewEntity, cancellationToken);
+        var viewRevision = new ViewRevisionEntity
+        {
+            Key = Guid.NewGuid()
+        };
 
         var categoryViewLinks = categoryKeys.Select(category => new CategoryViewLinkEntity
         {
             CategoryKey = Guid.Parse(category),
-            ViewKey = viewResult.Key
+            ViewKey = viewRevision.Key
         });
 
         var resultLinks = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
         foreach (var categoryViewLink in categoryViewLinks)
         {
-            var result = await _categoryViewLinkLifecycleHandler.CreateAsync(categoryViewLink, cancellationToken); ;
+            var result = await _categoryViewLinkLifecycleHandler.CreateAsync(categoryViewLink, cancellationToken: cancellationToken); ;
             resultLinks.Add(result);
         }
+
+        var viewResult = await _viewLifecycleHandler.CreateAsync(viewEntity, viewRevision, cancellationToken: cancellationToken);
+
 
         return (viewResult, resultLinks);
     }

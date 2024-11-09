@@ -35,7 +35,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Create
             };
 
             _viewLifecycleHandlerMock
-                .Setup(x => x.CreateAsync(viewEntity, It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateAsync(viewEntity, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(viewResult);
 
             var categoryViewLinkResults = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
@@ -49,7 +49,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Create
                 };
                 categoryViewLinkResults.Add(categoryViewLinkResult);
                 _categoryViewLinkLifecycleHandlerMock
-                    .Setup(x => x.CreateAsync(categoryViewLinkEntity, It.IsAny<CancellationToken>()))
+                    .Setup(x => x.CreateAsync(categoryViewLinkEntity, It.IsAny<CategoryViewLinkRevisionEntity?>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(categoryViewLinkResult);
             }
 
@@ -61,8 +61,8 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Create
             Assert.NotNull(result.Item2);
             Assert.Equal(viewResult, result.Item1);
             Assert.Equal(categoryViewLinkResults, result.Item2);
-            _viewLifecycleHandlerMock.Verify(x => x.CreateAsync(viewEntity, It.IsAny<CancellationToken>()), Times.Once);
-            _categoryViewLinkLifecycleHandlerMock.Verify(x => x.CreateAsync(It.IsAny<CategoryViewLinkEntity>(), It.IsAny<CancellationToken>()), Times.Exactly(categoryKeys.Count));
+            _viewLifecycleHandlerMock.Verify(x => x.CreateAsync(viewEntity, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()), Times.Once);
+            _categoryViewLinkLifecycleHandlerMock.Verify(x => x.CreateAsync(It.IsAny<CategoryViewLinkEntity>(), It.IsAny<CategoryViewLinkRevisionEntity?>(), It.IsAny<CancellationToken>()), Times.Exactly(categoryKeys.Count));
         }
 
         [Fact]
@@ -73,12 +73,12 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Create
             var categoryKeys = new List<string> { Guid.NewGuid().ToString() };
 
             _viewLifecycleHandlerMock
-                .Setup(x => x.CreateAsync(viewEntity, It.IsAny<CancellationToken>()))
+                .Setup(x => x.CreateAsync(viewEntity, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Creation failed"));
 
             // Act & Assert
             await Assert.ThrowsAsync<Exception>(() => _sut.CreateAsync(viewEntity, categoryKeys));
-            _viewLifecycleHandlerMock.Verify(x => x.CreateAsync(viewEntity, It.IsAny<CancellationToken>()), Times.Once);
+            _viewLifecycleHandlerMock.Verify(x => x.CreateAsync(viewEntity, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }
