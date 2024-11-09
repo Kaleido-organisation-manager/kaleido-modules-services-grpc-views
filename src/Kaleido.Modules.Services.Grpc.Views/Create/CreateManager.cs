@@ -22,7 +22,8 @@ public class CreateManager : ICreateManager
     {
         var viewRevision = new ViewRevisionEntity
         {
-            Key = Guid.NewGuid()
+            Key = Guid.NewGuid(),
+            CreatedAt = DateTime.UtcNow
         };
 
         var categoryViewLinks = categoryKeys.Select(category => new CategoryViewLinkEntity
@@ -34,7 +35,13 @@ public class CreateManager : ICreateManager
         var resultLinks = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
         foreach (var categoryViewLink in categoryViewLinks)
         {
-            var result = await _categoryViewLinkLifecycleHandler.CreateAsync(categoryViewLink, cancellationToken: cancellationToken); ;
+            var categoryRevision = new CategoryViewLinkRevisionEntity
+            {
+                Key = Guid.NewGuid(),
+                CreatedAt = viewRevision.CreatedAt
+            };
+
+            var result = await _categoryViewLinkLifecycleHandler.CreateAsync(categoryViewLink, categoryRevision, cancellationToken: cancellationToken); ;
             resultLinks.Add(result);
         }
 

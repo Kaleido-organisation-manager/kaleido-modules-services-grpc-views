@@ -73,6 +73,10 @@ public class DeleteManagerTests
             .Setup(x => x.DeleteAsync(key, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(viewResult);
 
+        viewLifecycleHandlerMock
+            .Setup(x => x.GetAsync(key, It.IsAny<int?>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(viewResult);
+
         var categoryViewLinkLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
         categoryViewLinkLifecycleHandlerMock
             .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
