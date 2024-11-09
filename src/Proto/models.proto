@@ -2,6 +2,8 @@ syntax = "proto3";
 
 package Kaleido.Grpc.Views;
 
+import "google/protobuf/timestamp.proto";
+
 message View {
     string name = 1;
     repeated string categories = 2;
@@ -26,7 +28,7 @@ message BaseRevision {
     string key = 1;
     int32 revision = 2;
     string action = 3;
-    string createdAt = 4;
+    google.protobuf.Timestamp createdAt = 4;
 }
 
 message ViewResponse {
@@ -55,5 +57,5 @@ message GetAllViewsByNameRequest {
 
 message GetViewRevisionRequest {
     string key = 1;
-    int32 revision = 2;
+    google.protobuf.Timestamp createdAt = 2;
 }
