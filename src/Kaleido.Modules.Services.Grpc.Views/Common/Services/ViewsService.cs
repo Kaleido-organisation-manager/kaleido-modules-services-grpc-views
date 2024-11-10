@@ -7,6 +7,7 @@ using Kaleido.Modules.Services.Grpc.Views.GetAll;
 using Kaleido.Modules.Services.Grpc.Views.GetAllByName;
 using Kaleido.Modules.Services.Grpc.Views.GetAllRevisions;
 using Kaleido.Modules.Services.Grpc.Views.GetRevision;
+using Kaleido.Modules.Services.Grpc.Views.Update;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Common.Services;
 
@@ -19,6 +20,7 @@ public class ViewsService : GrpcViews.GrpcViewsBase
     private readonly IGetAllByNameHandler _getAllByNameHandler;
     private readonly IGetAllRevisionsHandler _getAllRevisionsHandler;
     private readonly IGetRevisionHandler _getRevisionHandler;
+    private readonly IUpdateHandler _updateHandler;
 
     public ViewsService(
         ICreateHandler createHandler,
@@ -27,7 +29,8 @@ public class ViewsService : GrpcViews.GrpcViewsBase
         IGetAllHandler getAllHandler,
         IGetAllByNameHandler getAllByNameHandler,
         IGetAllRevisionsHandler getAllRevisionsHandler,
-        IGetRevisionHandler getRevisionHandler
+        IGetRevisionHandler getRevisionHandler,
+        IUpdateHandler updateHandler
         )
     {
         _createHandler = createHandler;
@@ -37,6 +40,7 @@ public class ViewsService : GrpcViews.GrpcViewsBase
         _getAllByNameHandler = getAllByNameHandler;
         _getAllRevisionsHandler = getAllRevisionsHandler;
         _getRevisionHandler = getRevisionHandler;
+        _updateHandler = updateHandler;
     }
 
     public override Task<ViewResponse> CreateView(View request, ServerCallContext context)
@@ -72,5 +76,10 @@ public class ViewsService : GrpcViews.GrpcViewsBase
     public override Task<ViewResponse> GetViewRevision(GetViewRevisionRequest request, ServerCallContext context)
     {
         return _getRevisionHandler.HandleAsync(request, context.CancellationToken);
+    }
+
+    public override Task<ViewResponse> UpdateView(ViewActionRequest request, ServerCallContext context)
+    {
+        return _updateHandler.HandleAsync(request, context.CancellationToken);
     }
 }
