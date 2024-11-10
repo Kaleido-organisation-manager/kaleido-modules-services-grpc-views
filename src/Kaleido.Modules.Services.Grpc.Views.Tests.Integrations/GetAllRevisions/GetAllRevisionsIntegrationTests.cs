@@ -43,8 +43,12 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetAllRevisions
             createView.Categories.AddRange(categoryKeys);
             var createdView = await _fixture.Client.CreateViewAsync(createView);
 
+            Console.WriteLine(createdView.Key);
+            Console.WriteLine(categoryKeys.FirstOrDefault() ?? "No category key");
+
             // Create revisions for the view
-            await _fixture.Client.UpdateViewAsync(new ViewActionRequest { Key = createdView.Key, View = { Name = "Updated View", Categories = { categoryKeys.First() } } });
+            var updatedView = new View { Name = "Updated View", Categories = { categoryKeys.First() } };
+            await _fixture.Client.UpdateViewAsync(new ViewActionRequest { Key = createdView.Key, View = updatedView });
 
             // Act
             var request = new ViewRequest { Key = createdView.Key };

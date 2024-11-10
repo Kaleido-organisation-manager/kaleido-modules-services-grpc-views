@@ -191,7 +191,9 @@ public class InfrastructureFixture : IDisposable
         await _migrationContainer.DisposeAsync();
         await _postgres.DisposeAsync();
         _channel.Dispose();
-        await GrpcContainer.DisposeAsync();
+        // await GrpcContainer.DisposeAsync();
+        // await _categoryContainer.DisposeAsync();
+        await _categoryMigrationContainer.DisposeAsync();
     }
 
     public void Dispose()
