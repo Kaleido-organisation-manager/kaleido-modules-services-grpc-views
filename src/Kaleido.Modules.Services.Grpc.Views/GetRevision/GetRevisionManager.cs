@@ -1,3 +1,4 @@
+using Kaleido.Common.Services.Grpc.Constants;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
@@ -26,6 +27,7 @@ public class GetRevisionManager : IGetRevisionManager
         }
 
         var categoryViewLinkResults = await _categoryViewLinkLifecycleHandler.FindAllAsync(link => link.ViewKey == key, r => r.CreatedAt == createdAt, cancellationToken: cancellationToken);
+        categoryViewLinkResults = categoryViewLinkResults.GroupBy(l => l.Key).Select(l => l.OrderByDescending(x => x.Revision.Revision).First()).Where(l => l.Revision.Action != RevisionAction.Deleted);
 
         return (viewResult, categoryViewLinkResults);
     }

@@ -26,7 +26,8 @@ public class GetManager : IGetManager
         }
 
         var categoryViewLinkResults = await _categoryViewLinkLifecycleHandler.FindAllAsync(link => link.ViewKey == key, cancellationToken: cancellationToken);
-        categoryViewLinkResults = categoryViewLinkResults.Where(r => r.Revision.Action != RevisionAction.Deleted);
+        var latestCategoryViewLinkResults = categoryViewLinkResults.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.Revision.Revision).First());
+        categoryViewLinkResults = latestCategoryViewLinkResults.Where(r => r.Revision.Action != RevisionAction.Deleted);
 
         return (viewResult, categoryViewLinkResults);
     }

@@ -35,5 +35,17 @@ public class ViewMappingProfile : Profile
         CreateMap<ViewRevisionEntity, BaseRevision>();
         CreateMap<Timestamp, DateTime>().ConvertUsing(src => src.ToDateTime());
         CreateMap<DateTime, Timestamp>().ConvertUsing(src => Timestamp.FromDateTime(src.ToUniversalTime()));
+
+        CreateMap<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>, EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>()
+            .ForMember(dest => dest.Entity, opt => opt.MapFrom(src => src.Entity))
+            .ForMember(dest => dest.Revision, opt => opt.MapFrom(src => src.Revision));
+        CreateMap<CategoryViewLinkEntity, CategoryViewLinkEntity>();
+        CreateMap<CategoryViewLinkRevisionEntity, CategoryViewLinkRevisionEntity>();
+
+        CreateMap<EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>>()
+            .ForMember(dest => dest.Entity, opt => opt.MapFrom(src => src.Entity))
+            .ForMember(dest => dest.Revision, opt => opt.MapFrom(src => src.Revision));
+        CreateMap<ViewRevisionEntity, ViewRevisionEntity>();
+        CreateMap<ViewEntity, ViewEntity>();
     }
 }

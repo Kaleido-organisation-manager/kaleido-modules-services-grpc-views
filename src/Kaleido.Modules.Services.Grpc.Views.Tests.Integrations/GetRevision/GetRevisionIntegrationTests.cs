@@ -1,3 +1,4 @@
+using System.Text.Json;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Kaleido.Grpc.Categories;
@@ -21,11 +22,6 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetRevision
         public async Task GetRevision_WhenViewExists_ReturnsViewRevision()
         {
             // Arrange
-            var createView = new View
-            {
-                Name = "Test View",
-                Categories = { }
-            };
 
             var categories = new List<Category>()
             {
@@ -40,25 +36,33 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetRevision
                 categoryKeys.Add(createdCategory.Key);
             }
 
-            createView.Categories.AddRange(categoryKeys);
+            var createView = new View
+            {
+                Name = "Test View",
+                Categories = { categoryKeys }
+            };
 
             var createdView = await _fixture.Client.CreateViewAsync(createView);
 
-            var revisionRequest = new ViewActionRequest
-            {
-                Key = createdView.Key,
-                View = { Name = "Updated View" }
-            };
+            // I don't know why I have to do this, but it works, a normal object assignment doesn't work
+            var key = createdView.Key;
+            var revisionRequest = new ViewActionRequest();
+            revisionRequest.Key = key;
+            var view = new View();
+            view.Name = "Updated View";
+            view.Categories.Add(categoryKeys.First());
+            revisionRequest.View = view;
+
             await _fixture.Client.UpdateViewAsync(revisionRequest);
 
             // Act
-            var request = new GetViewRevisionRequest { Key = createdView.Key, CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow) };
+            var request = new GetViewRevisionRequest { Key = key, CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow) };
             var response = await _fixture.Client.GetViewRevisionAsync(request);
 
             // Assert
             Assert.NotNull(response);
             Assert.Equal("Updated View", response.View.Name);
-            Assert.Equal(createdView.Key, response.Key);
+            Assert.Equal(key, response.Key);
         }
 
         [Fact]

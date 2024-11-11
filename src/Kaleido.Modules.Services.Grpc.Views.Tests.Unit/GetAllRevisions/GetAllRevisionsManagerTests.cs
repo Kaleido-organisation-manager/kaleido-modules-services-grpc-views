@@ -1,6 +1,8 @@
 using System.Linq.Expressions;
+using AutoMapper;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
+using Kaleido.Modules.Services.Grpc.Views.Common.Mappers;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.GetAllRevisions;
 using Moq;
@@ -21,7 +23,12 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllRevisions
             _mocker = new AutoMocker();
             _viewLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<ViewEntity, ViewRevisionEntity>>();
             _categoryViewLinkLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
-            _sut = new GetAllRevisionsManager(_viewLifecycleHandlerMock.Object, _categoryViewLinkLifecycleHandlerMock.Object);
+            var mapper = new MapperConfiguration(cfg =>
+            {
+                cfg.AddProfile<ViewMappingProfile>();
+            });
+            _mocker.Use(mapper.CreateMapper());
+            _sut = _mocker.CreateInstance<GetAllRevisionsManager>();
         }
 
         [Fact]
@@ -61,8 +68,8 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllRevisions
             // Assert
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal(viewRevisions.First(), result.First().Item1);
-            Assert.Equal(categoryViewLinkRevisions, result.First().Item2);
+            Assert.Equal(viewRevisions.First().Revision.CreatedAt, result.First().Item1.Revision.CreatedAt);
+            Assert.Equal(categoryViewLinkRevisions.First().Revision.CreatedAt, result.First().Item2.First().Revision.CreatedAt);
         }
 
         [Fact]

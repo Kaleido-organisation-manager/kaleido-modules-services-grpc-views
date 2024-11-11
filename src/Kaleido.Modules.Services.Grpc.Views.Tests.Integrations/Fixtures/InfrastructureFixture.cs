@@ -176,7 +176,6 @@ public class InfrastructureFixture : IDisposable
 
         await GrpcContainer.StartAsync().WaitAsync(TimeSpan.FromMinutes(TIMEOUT_WAIT_MINUTES));
 
-
         var grpcPort = GrpcContainer.GetMappedPublicPort(8080);
         await TestcontainersSettings.ExposeHostPortsAsync(grpcPort);
         var grpcUri = new UriBuilder("http", GrpcContainer.Hostname, grpcPort);
@@ -191,8 +190,8 @@ public class InfrastructureFixture : IDisposable
         await _migrationContainer.DisposeAsync();
         await _postgres.DisposeAsync();
         _channel.Dispose();
-        // await GrpcContainer.DisposeAsync();
-        // await _categoryContainer.DisposeAsync();
+        await GrpcContainer.DisposeAsync();
+        await _categoryContainer.DisposeAsync();
         await _categoryMigrationContainer.DisposeAsync();
     }
 
@@ -203,8 +202,6 @@ public class InfrastructureFixture : IDisposable
 
     public async Task ClearDatabase()
     {
-        // return Task.CompletedTask;
-        // TODO: Implement
         var categories = await CategoriesClient.GetAllCategoriesAsync(new Kaleido.Grpc.Categories.EmptyRequest());
         foreach (var category in categories.Categories)
         {

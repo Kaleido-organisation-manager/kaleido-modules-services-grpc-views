@@ -132,13 +132,13 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllByName
             {
                 new EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>
                 {
-                    Entity = new CategoryViewLinkEntity { ViewKey = Guid.NewGuid() },
-                    Revision = new CategoryViewLinkRevisionEntity { Action = RevisionAction.Deleted }
+                    Entity = new CategoryViewLinkEntity { ViewKey = Guid.NewGuid(), },
+                    Revision = new CategoryViewLinkRevisionEntity { Key = Guid.NewGuid(), Action = RevisionAction.Deleted }
                 },
                 new EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>
                 {
                     Entity = new CategoryViewLinkEntity { ViewKey = Guid.NewGuid() },
-                    Revision = new CategoryViewLinkRevisionEntity { Action = RevisionAction.Created }
+                    Revision = new CategoryViewLinkRevisionEntity { Key = Guid.NewGuid(), Action = RevisionAction.Created }
                 }
             };
 

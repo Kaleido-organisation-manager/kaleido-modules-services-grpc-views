@@ -25,7 +25,7 @@ public class GetAllManager : IGetAllManager
         foreach (var view in views)
         {
             var categoryViewLinks = await _categoryViewLinkLifecycleHandler.FindAllAsync(link => link.ViewKey == view.Key, cancellationToken: cancellationToken);
-            categoryViewLinks = categoryViewLinks.Where(l => l.Revision.Action != RevisionAction.Deleted);
+            categoryViewLinks = categoryViewLinks.GroupBy(l => l.Key).Select(l => l.OrderByDescending(x => x.Revision.Revision).First()).Where(l => l.Revision.Action != RevisionAction.Deleted);
 
             results.Add((view, categoryViewLinks));
         }

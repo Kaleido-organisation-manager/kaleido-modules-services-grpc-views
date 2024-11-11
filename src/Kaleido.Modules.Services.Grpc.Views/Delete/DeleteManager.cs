@@ -1,3 +1,4 @@
+using Kaleido.Common.Services.Grpc.Constants;
 using Kaleido.Common.Services.Grpc.Exceptions;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
@@ -34,17 +35,32 @@ public class DeleteManager : IDeleteManager
             link => link.ViewKey == key,
             cancellationToken: cancellationToken);
 
+        categoryViewLinks = categoryViewLinks.GroupBy(l => l.Key).Select(l => l.OrderByDescending(x => x.Revision.Revision).First()).Where(l => l.Revision.Action != RevisionAction.Deleted);
+
+        var timestamp = DateTime.UtcNow;
+
         var resultLinks = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
         foreach (var categoryViewLink in categoryViewLinks)
         {
-            var result = await _categoryViewLinkLifecycleHandler.DeleteAsync(categoryViewLink.Key, cancellationToken: cancellationToken);
+            var categoryRevision = new CategoryViewLinkRevisionEntity
+            {
+                Key = categoryViewLink.Key,
+                CreatedAt = timestamp
+            };
+
+            var result = await _categoryViewLinkLifecycleHandler.DeleteAsync(categoryViewLink.Key, categoryRevision, cancellationToken: cancellationToken);
             if (result != null)
             {
                 resultLinks.Add(result);
             }
         }
 
-        var viewResult = await _viewLifecycleHandler.DeleteAsync(key, cancellationToken: cancellationToken);
+        var viewRevision = new ViewRevisionEntity
+        {
+            Key = key,
+            CreatedAt = timestamp
+        };
+        var viewResult = await _viewLifecycleHandler.DeleteAsync(key, viewRevision, cancellationToken: cancellationToken);
 
         return (viewResult, resultLinks);
     }

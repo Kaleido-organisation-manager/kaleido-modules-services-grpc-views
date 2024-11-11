@@ -1,3 +1,4 @@
+using System.Text.RegularExpressions;
 using Kaleido.Common.Services.Grpc.Constants;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
@@ -22,14 +23,14 @@ public class GetAllByNameManager : IGetAllByNameManager
     public async Task<IEnumerable<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>> GetAllAsync(string name, CancellationToken cancellationToken)
     {
         var views = await _viewLifecycleHandler.FindAllAsync(v => v.Name.ToLower().Contains(name.ToLower()), cancellationToken: cancellationToken);
-        views = views.Where(v => v.Revision.Action != RevisionAction.Deleted);
+        views = views.GroupBy(v => v.Key).Select(v => v.OrderByDescending(x => x.Revision.Revision).First()).Where(v => v.Revision.Action != RevisionAction.Deleted);
 
         var results = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>();
 
         foreach (var view in views)
         {
             var categoryViewLinks = await _categoryViewLinkLifecycleHandler.FindAllAsync(link => link.ViewKey == view.Key, cancellationToken: cancellationToken);
-            categoryViewLinks = categoryViewLinks.Where(l => l.Revision.Action != RevisionAction.Deleted);
+            categoryViewLinks = categoryViewLinks.GroupBy(l => l.Key).Select(l => l.OrderByDescending(x => x.Revision.Revision).First()).Where(l => l.Revision.Action != RevisionAction.Deleted);
 
             results.Add((view, categoryViewLinks));
         }
