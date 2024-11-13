@@ -145,6 +145,8 @@ jobs:
     name: Pull Categories Images
     if: success()
     runs-on: ubuntu-latest
+    permissions:
+      packages: read
     steps:
       - name: login to ghcr
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
