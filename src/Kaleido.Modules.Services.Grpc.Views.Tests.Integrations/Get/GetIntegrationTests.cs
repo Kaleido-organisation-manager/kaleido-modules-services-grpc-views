@@ -2,83 +2,82 @@ using Grpc.Core;
 using Kaleido.Grpc.Categories;
 using Kaleido.Grpc.Views;
 using Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Fixtures;
-using Xunit;
 
-namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Get
+namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Get;
+
+[Collection("Infrastructure collection")]
+public class GetIntegrationTests
 {
-    public class GetIntegrationTests : IClassFixture<InfrastructureFixture>
+    private readonly InfrastructureFixture _fixture;
+
+    public GetIntegrationTests(InfrastructureFixture fixture)
     {
-        private readonly InfrastructureFixture _fixture;
+        _fixture = fixture;
+        _fixture.ClearDatabase().Wait();
+    }
 
-        public GetIntegrationTests(InfrastructureFixture fixture)
+    [Fact]
+    public async Task Get_WhenViewExists_ReturnsView()
+    {
+        // Arrange
+        var createView = new View
         {
-            _fixture = fixture;
-            _fixture.ClearDatabase().Wait();
+            Name = "Test View",
+            Categories = { }
+        };
+
+        var categories = new List<Category>()
+        {
+            new Category { Name = "Category 1" },
+            new Category { Name = "Category 2" }
+        };
+
+        var categoryKeys = new List<string>();
+        foreach (var category in categories)
+        {
+            var createdCategory = await _fixture.CategoriesClient.CreateCategoryAsync(category);
+            categoryKeys.Add(createdCategory.Key);
         }
 
-        [Fact]
-        public async Task Get_WhenViewExists_ReturnsView()
-        {
-            // Arrange
-            var createView = new View
-            {
-                Name = "Test View",
-                Categories = { }
-            };
+        createView.Categories.AddRange(categoryKeys);
 
-            var categories = new List<Category>()
-            {
-                new Category { Name = "Category 1" },
-                new Category { Name = "Category 2" }
-            };
+        var createdView = await _fixture.Client.CreateViewAsync(createView);
 
-            var categoryKeys = new List<string>();
-            foreach (var category in categories)
-            {
-                var createdCategory = await _fixture.CategoriesClient.CreateCategoryAsync(category);
-                categoryKeys.Add(createdCategory.Key);
-            }
+        // Act
+        var request = new ViewRequest { Key = createdView.Key };
+        var response = await _fixture.Client.GetViewAsync(request);
 
-            createView.Categories.AddRange(categoryKeys);
+        // Assert
+        Assert.NotNull(response);
+        Assert.Equal("Test View", response.View.Name);
+        Assert.Equal(createdView.Key, response.Key);
+    }
 
-            var createdView = await _fixture.Client.CreateViewAsync(createView);
+    [Fact]
+    public async Task Get_WhenViewDoesNotExist_ThrowsNotFoundException()
+    {
+        // Arrange
+        var request = new ViewRequest { Key = Guid.NewGuid().ToString() };
 
-            // Act
-            var request = new ViewRequest { Key = createdView.Key };
-            var response = await _fixture.Client.GetViewAsync(request);
+        // Act
+        var act = async () => await _fixture.Client.GetViewAsync(request);
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Equal("Test View", response.View.Name);
-            Assert.Equal(createdView.Key, response.Key);
-        }
+        // Assert
+        var exception = await Assert.ThrowsAsync<RpcException>(() => act());
+        Assert.Equal(StatusCode.NotFound, exception.Status.StatusCode);
+    }
 
-        [Fact]
-        public async Task Get_WhenViewDoesNotExist_ThrowsNotFoundException()
-        {
-            // Arrange
-            var request = new ViewRequest { Key = Guid.NewGuid().ToString() };
+    [Fact]
+    public async Task Get_WithInvalidKey_ThrowsInvalidArgumentException()
+    {
+        // Arrange
+        var request = new ViewRequest { Key = "invalid-guid" };
 
-            // Act
-            var act = async () => await _fixture.Client.GetViewAsync(request);
+        // Act
+        var act = async () => await _fixture.Client.GetViewAsync(request);
 
-            // Assert
-            var exception = await Assert.ThrowsAsync<RpcException>(() => act());
-            Assert.Equal(StatusCode.NotFound, exception.Status.StatusCode);
-        }
-
-        [Fact]
-        public async Task Get_WithInvalidKey_ThrowsInvalidArgumentException()
-        {
-            // Arrange
-            var request = new ViewRequest { Key = "invalid-guid" };
-
-            // Act
-            var act = async () => await _fixture.Client.GetViewAsync(request);
-
-            // Assert
-            var exception = await Assert.ThrowsAsync<RpcException>(() => act());
-            Assert.Equal(StatusCode.InvalidArgument, exception.Status.StatusCode);
-        }
+        // Assert
+        var exception = await Assert.ThrowsAsync<RpcException>(() => act());
+        Assert.Equal(StatusCode.InvalidArgument, exception.Status.StatusCode);
     }
 }

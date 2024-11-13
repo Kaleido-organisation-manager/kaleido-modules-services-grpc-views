@@ -1,12 +1,11 @@
-using Grpc.Core;
 using Kaleido.Grpc.Categories;
 using Kaleido.Grpc.Views;
 using Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Fixtures;
-using Xunit;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetAllByName;
 
-public class GetAllByNameIntegrationTests : IClassFixture<InfrastructureFixture>
+[Collection("Infrastructure collection")]
+public class GetAllByNameIntegrationTests
 {
     private readonly InfrastructureFixture _fixture;
 
