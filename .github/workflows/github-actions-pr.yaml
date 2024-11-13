@@ -149,7 +149,7 @@ jobs:
       packages: read
     steps:
       - name: login to ghcr
-        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io/kaleido-organisation-manager -u ${{ github.actor }} --password-stdin
+        run: echo ${{ secrets.NUGET_GITHUB_TOKEN }} | docker login ghcr.io/kaleido-organisation-manager -u ${{ github.actor }} --password-stdin
       - name: Pull Categories Service Image
         run: docker pull ghcr.io/kaleido-organisation-manager/kaleido-modules-services-grpc-categories:latest
       - name: Pull Categories Migrations Image
