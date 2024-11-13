@@ -1,0 +1,11 @@
+# Build the runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+
+ARG RELEASE_DIR
+
+LABEL org.opencontainers.image.source=https://github.com/Kaleido-organisation-manager/kaleido-modules-services-grpc-views
+LABEL org.opencontainers.image.description="Container image for the Kaleido Modules Services Grpc Views Migrations"
+
+WORKDIR /app
+COPY ${RELEASE_DIR} .
+ENTRYPOINT ["dotnet", "Kaleido.Modules.Services.Grpc.Views.Migrations.dll"]

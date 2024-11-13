@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package Kaleido.Grpc.Views;
+
+import "models.proto";
+
+service GrpcViews {
+    rpc CreateView(View) returns (ViewResponse);
+    rpc DeleteView(ViewRequest) returns (ViewResponse);
+    rpc GetAllViewRevisions(ViewRequest) returns (ViewListResponse);
+    rpc GetAllViews(EmptyRequest) returns (ViewListResponse);
+    rpc GetAllViewsByName(GetAllViewsByNameRequest) returns (ViewListResponse);
+    rpc GetView(ViewRequest) returns (ViewResponse);
+    rpc GetViewRevision(GetViewRevisionRequest) returns (ViewResponse);
+    rpc UpdateView(ViewActionRequest) returns (ViewResponse);
+}

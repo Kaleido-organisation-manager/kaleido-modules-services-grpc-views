@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package Kaleido.Grpc.Views;
+
+import "google/protobuf/timestamp.proto";
+
+message View {
+    string name = 1;
+    repeated string categories = 2;
+}
+
+message CategoryViewLink {
+    string category = 1;
+}
+
+message ViewRequest {
+    string key = 1;
+}
+
+message ViewActionRequest {
+    string key = 1;
+    View view = 2;
+}
+
+message EmptyRequest {}
+
+message BaseRevision {
+    string key = 1;
+    int32 revision = 2;
+    string action = 3;
+    google.protobuf.Timestamp createdAt = 4;
+}
+
+message ViewResponse {
+    string key = 1;
+    LinkedViewResponse view = 2;
+    BaseRevision revision = 3;
+}
+
+message LinkedViewResponse {
+    string name = 1;
+    repeated CategoryViewLinkResponse categories = 2;
+}
+
+message CategoryViewLinkResponse {
+    CategoryViewLink categoryLink = 1;
+    BaseRevision revision = 2;
+}
+
+message ViewListResponse {
+    repeated ViewResponse views = 1;
+}
+
+message GetAllViewsByNameRequest {
+    string name = 1;
+}
+
+message GetViewRevisionRequest {
+    string key = 1;
+    google.protobuf.Timestamp createdAt = 2;
+}
