@@ -1,0 +1,181 @@
+name: CI Pipeline on Pull Request
+
+'on': pull_request
+
+jobs:
+  gitversion:
+    name: GitVersion
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.Semver.outputs.MajorMinorPatch }}
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+        with:
+          fetch-depth: 0
+      - uses: gittools/actions/gitversion/setup@v3.0.0
+      - id: Semver
+        uses: gittools/actions/gitversion/execute@v3.0.0
+
+  build-views-service:
+    name: Build Views Service
+    needs: gitversion
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of views service
+        run: dotnet restore 
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views
+      - name: Build views service
+        run: dotnet build
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views
+
+  build-views-service-migrations:
+    name: Build Views Service Migrations
+    needs: gitversion
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of views service migrations
+        run: dotnet restore
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Migrations
+      - name: Build views service migrations
+        run: dotnet build
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Migrations
+
+  build-views-service-client:
+    name: Build Views Service Client
+    needs: gitversion
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of views service client
+        run: dotnet restore
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Client
+      - name: Build views service client
+        run: dotnet build
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Client
+
+  unit-tests:
+    name: Run Unit Tests
+    needs: [build-views-service, build-views-service-migrations, build-views-service-client]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of unit tests
+        run: dotnet restore
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Tests.Unit
+      - name: Run unit tests
+        run: dotnet test
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Tests.Unit
+
+  create-service-release:
+    name: Create Dotnet Release for service
+    runs-on: ubuntu-latest
+    needs: [build-views-service, build-views-service-migrations, build-views-service-client, gitversion]
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of service
+        run: dotnet restore
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views
+      - name: Build service Release
+        run: dotnet build -c Release
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views
+      - name: Upload Dotnet Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: views-service
+          path: src/Kaleido.Modules.Services.Grpc.Views/bin/Release/net8.0
+
+  create-migrations-release:
+    name: Create Dotnet Release for migrations
+    runs-on: ubuntu-latest
+    needs: [build-views-service, build-views-service-migrations, build-views-service-client, gitversion]
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of migrations
+        run: dotnet restore
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Migrations
+      - name: Build migrations
+        run: dotnet build -c Release
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Migrations
+      - name: Upload Dotnet Release Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: views-service-migrations
+          path: src/Kaleido.Modules.Services.Grpc.Views.Migrations/bin/Release/net8.0
+
+  pull-categories-images:
+    name: Pull Categories Images
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pull Categories Service Image
+        run: docker pull kaleido-modules-services-grpc-categories:latest
+      - name: Pull Categories Migrations Image
+        run: docker pull kaleido-modules-services-grpc-categories-migrations:latest
+
+  integration-tests:
+    name: Run Integration Tests
+    needs: [create-service-release, create-migrations-release, gitversion]
+    runs-on: ubuntu-latest
+    permissions:
+      packages: read
+    steps:
+      - uses: actions/checkout@v4
+        name: Checkout Repository
+      - name: Add Github nugetfeed
+        run: dotnet nuget add source --username DriesDelanghe --password ${{ secrets.NUGET_GITHUB_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Kaleido-organisation-manager/index.json"
+      - name: Restore dependencies of integration tests
+        run: dotnet restore
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Tests.Integrations
+      - name: Download Service Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: views-service
+          path: service/out
+      - name: Download Migrations Release Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: views-service-migrations
+          path: migrations/out
+      - name: Build Product Service Docker Image
+        run: docker build . -f dockerfiles/Grpc.Views/Dockerfile.cicd -t kaleido-modules-services-grpc-views:${{ needs.gitversion.outputs.version }} --build-arg RELEASE_DIR=service/out
+      - name: Build Migrations Docker Image
+        run: docker build . -f dockerfiles/Grpc.Views.Migrations/Dockerfile.cicd -t kaleido-modules-services-grpc-views-migrations:${{ needs.gitversion.outputs.version }} --build-arg RELEASE_DIR=migrations/out
+      - name: Run integration tests
+        run: dotnet test
+        working-directory: src/Kaleido.Modules.Services.Grpc.Views.Tests.Integrations
+        env:
+          VIEWS_IMAGE_NAME: kaleido-modules-services-grpc-views:${{ needs.gitversion.outputs.version }}
+          MIGRATIONS_IMAGE_NAME: kaleido-modules-services-grpc-views-migrations:${{ needs.gitversion.outputs.version }}
+          CI: true
