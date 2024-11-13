@@ -80,6 +80,7 @@ jobs:
   unit-tests:
     name: Run Unit Tests
     needs: [build-views-service, build-views-service-migrations, build-views-service-client]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       packages: read
@@ -97,8 +98,9 @@ jobs:
 
   create-service-release:
     name: Create Dotnet Release for service
-    runs-on: ubuntu-latest
     needs: [build-views-service, build-views-service-migrations, build-views-service-client, gitversion]
+    if: success()
+    runs-on: ubuntu-latest
     permissions:
       packages: read
     steps:
@@ -120,8 +122,9 @@ jobs:
 
   create-migrations-release:
     name: Create Dotnet Release for migrations
-    runs-on: ubuntu-latest
     needs: [build-views-service, build-views-service-migrations, build-views-service-client, gitversion]
+    if: success()
+    runs-on: ubuntu-latest
     permissions:
       packages: read
     steps:
@@ -144,6 +147,7 @@ jobs:
   integration-tests:
     name: Run Integration Tests
     needs: [create-service-release, create-migrations-release, gitversion]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       packages: read
@@ -172,9 +176,9 @@ jobs:
       - name: login to ghcr
         run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Pull Categories Image
-        run: docker pull kaleido-modules-services-grpc-categories:latest
+        run: docker pull ghcr.io/kaleido-organisation-manager/kaleido-modules-services-grpc-categories:latest
       - name: Pull Categories Migrations Image
-        run: docker pull kaleido-modules-services-grpc-categories-migrations:latest
+        run: docker pull ghcr.io/kaleido-organisation-manager/kaleido-modules-services-grpc-categories-migrations:latest
       - name: Run integration tests
         run: dotnet test
         working-directory: src/Kaleido.Modules.Services.Grpc.Views.Tests.Integrations
@@ -185,10 +189,11 @@ jobs:
 
   git-tag-release:
     name: Git Tag Release
+    needs: [integration-tests, unit-tests, gitversion]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: [integration-tests, unit-tests, gitversion]
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -201,6 +206,7 @@ jobs:
   build-and-push-views-docker-image:
     name: Build and Push Views Service Docker Image
     needs: [git-tag-release, gitversion, create-service-release]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -234,6 +240,7 @@ jobs:
   build-and-push-migrations-docker-image:
     name: Build and Push Migrations Docker Image
     needs: [git-tag-release, gitversion, create-migrations-release]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       packages: write
@@ -266,8 +273,9 @@ jobs:
 
   create-client-release:
     name: Create Dotnet Release for client
-    runs-on: ubuntu-latest
     needs: [git-tag-release, gitversion]
+    if: success()
+    runs-on: ubuntu-latest
     permissions:
       packages: read
     steps:
@@ -291,6 +299,7 @@ jobs:
   publish-client-package:
     name: Publish Client Package
     needs: [create-client-release, gitversion]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       packages: write
