@@ -5,7 +5,8 @@ using Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Fixtures;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integration.Delete;
 
-public class DeleteIntegrationTests : IClassFixture<InfrastructureFixture>
+[Collection("Infrastructure collection")]
+public class DeleteIntegrationTests
 {
     private readonly InfrastructureFixture _fixture;
 

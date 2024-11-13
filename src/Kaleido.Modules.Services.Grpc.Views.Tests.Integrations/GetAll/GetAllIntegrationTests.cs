@@ -1,109 +1,108 @@
-using Grpc.Core;
 using Kaleido.Grpc.Categories;
 using Kaleido.Grpc.Views;
 using Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Fixtures;
-using Xunit;
 
-namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetAll
+namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetAll;
+
+[Collection("Infrastructure collection")]
+public class GetAllIntegrationTests
 {
-    public class GetAllIntegrationTests : IClassFixture<InfrastructureFixture>
+    private readonly InfrastructureFixture _fixture;
+
+    public GetAllIntegrationTests(InfrastructureFixture fixture)
     {
-        private readonly InfrastructureFixture _fixture;
+        _fixture = fixture;
+        _fixture.ClearDatabase().Wait();
+    }
 
-        public GetAllIntegrationTests(InfrastructureFixture fixture)
+    [Fact]
+    public async Task GetAll_WhenViewsAndLinksExist_ReturnsViewListResponse()
+    {
+        // Arrange
+        var createView = new View
         {
-            _fixture = fixture;
-            _fixture.ClearDatabase().Wait();
+            Name = "Test View",
+            Categories = { }
+        };
+
+        var categories = new List<Category>()
+        {
+            new Category { Name = "Category 1" },
+            new Category { Name = "Category 2" }
+        };
+
+        var categoryKeys = new List<string>();
+        foreach (var category in categories)
+        {
+            var createdCategory = await _fixture.CategoriesClient.CreateCategoryAsync(category);
+            categoryKeys.Add(createdCategory.Key);
         }
 
-        [Fact]
-        public async Task GetAll_WhenViewsAndLinksExist_ReturnsViewListResponse()
+        createView.Categories.AddRange(categoryKeys);
+        var createdView = await _fixture.Client.CreateViewAsync(createView);
+
+        // Act
+        var request = new Kaleido.Grpc.Views.EmptyRequest();
+        var response = await _fixture.Client.GetAllViewsAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.NotEmpty(response.Views);
+        Assert.Equal("Test View", response.Views.First().View.Name);
+        Assert.Equal(createdView.Key, response.Views.First().Key);
+        Assert.Equal(categories.Count, response.Views.First().View.Categories.Count);
+    }
+
+    [Fact]
+    public async Task GetAll_WhenNoViewsExist_ReturnsEmptyResponse()
+    {
+        // Arrange
+        var request = new Kaleido.Grpc.Views.EmptyRequest();
+
+        // Act
+        var response = await _fixture.Client.GetAllViewsAsync(request);
+
+        // Assert
+        Assert.NotNull(response);
+        Assert.Empty(response.Views);
+    }
+
+    [Fact]
+    public async Task GetAll_WhenViewIsDeleted_DoesNotIncludeIt()
+    {
+        // Arrange
+        var createView = new View
         {
-            // Arrange
-            var createView = new View
-            {
-                Name = "Test View",
-                Categories = { }
-            };
+            Name = "Test View",
+            Categories = { }
+        };
 
-            var categories = new List<Category>()
-            {
-                new Category { Name = "Category 1" },
-                new Category { Name = "Category 2" }
-            };
+        var categories = new List<Category>()
+        {
+            new Category { Name = "Category 1" },
+            new Category { Name = "Category 2" }
+        };
 
-            var categoryKeys = new List<string>();
-            foreach (var category in categories)
-            {
-                var createdCategory = await _fixture.CategoriesClient.CreateCategoryAsync(category);
-                categoryKeys.Add(createdCategory.Key);
-            }
-
-            createView.Categories.AddRange(categoryKeys);
-            var createdView = await _fixture.Client.CreateViewAsync(createView);
-
-            // Act
-            var request = new Kaleido.Grpc.Views.EmptyRequest();
-            var response = await _fixture.Client.GetAllViewsAsync(request);
-
-            // Assert
-            Assert.NotNull(response);
-            Assert.NotEmpty(response.Views);
-            Assert.Equal("Test View", response.Views.First().View.Name);
-            Assert.Equal(createdView.Key, response.Views.First().Key);
-            Assert.Equal(categories.Count, response.Views.First().View.Categories.Count);
+        var categoryKeys = new List<string>();
+        foreach (var category in categories)
+        {
+            var createdCategory = await _fixture.CategoriesClient.CreateCategoryAsync(category);
+            categoryKeys.Add(createdCategory.Key);
         }
 
-        [Fact]
-        public async Task GetAll_WhenNoViewsExist_ReturnsEmptyResponse()
-        {
-            // Arrange
-            var request = new Kaleido.Grpc.Views.EmptyRequest();
+        createView.Categories.AddRange(categoryKeys);
+        var createdView = await _fixture.Client.CreateViewAsync(createView);
 
-            // Act
-            var response = await _fixture.Client.GetAllViewsAsync(request);
+        var deleteViewRequest = new ViewRequest { Key = createdView.Key };
+        await _fixture.Client.DeleteViewAsync(deleteViewRequest);
 
-            // Assert
-            Assert.NotNull(response);
-            Assert.Empty(response.Views);
-        }
+        // Act
+        var request = new Kaleido.Grpc.Views.EmptyRequest();
+        var response = await _fixture.Client.GetAllViewsAsync(request);
 
-        [Fact]
-        public async Task GetAll_WhenViewIsDeleted_DoesNotIncludeIt()
-        {
-            // Arrange
-            var createView = new View
-            {
-                Name = "Test View",
-                Categories = { }
-            };
-
-            var categories = new List<Category>()
-            {
-                new Category { Name = "Category 1" },
-                new Category { Name = "Category 2" }
-            };
-
-            var categoryKeys = new List<string>();
-            foreach (var category in categories)
-            {
-                var createdCategory = await _fixture.CategoriesClient.CreateCategoryAsync(category);
-                categoryKeys.Add(createdCategory.Key);
-            }
-
-            createView.Categories.AddRange(categoryKeys);
-            var createdView = await _fixture.Client.CreateViewAsync(createView);
-
-            var deleteViewRequest = new ViewRequest { Key = createdView.Key };
-            await _fixture.Client.DeleteViewAsync(deleteViewRequest);
-
-            // Act
-            var request = new Kaleido.Grpc.Views.EmptyRequest();
-            var response = await _fixture.Client.GetAllViewsAsync(request);
-
-            // Assert
-            Assert.NotNull(response);
-            Assert.Empty(response.Views);
-        }
+        // Assert
+        Assert.NotNull(response);
+        Assert.Empty(response.Views);
     }
 }
+
