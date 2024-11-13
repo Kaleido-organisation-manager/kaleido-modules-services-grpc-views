@@ -139,6 +139,8 @@ jobs:
     name: Pull Categories Images
     runs-on: ubuntu-latest
     steps:
+      - name: login to ghcr
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Pull Categories Service Image
         run: docker pull kaleido-modules-services-grpc-categories:latest
       - name: Pull Categories Migrations Image

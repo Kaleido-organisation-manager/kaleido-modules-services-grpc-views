@@ -169,6 +169,12 @@ jobs:
         run: docker build . -f dockerfiles/Grpc.Views/Dockerfile.cicd -t kaleido-modules-services-grpc-views:${{ needs.gitversion.outputs.version }} --build-arg RELEASE_DIR=service/out
       - name: Build Migrations Docker Image
         run: docker build . -f dockerfiles/Grpc.Views.Migrations/Dockerfile.cicd -t kaleido-modules-services-grpc-views-migrations:${{ needs.gitversion.outputs.version }} --build-arg RELEASE_DIR=migrations/out
+      - name: login to ghcr
+        run: echo ${{ secrets.GITHUB_TOKEN }} | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Pull Categories Image
+        run: docker pull kaleido-modules-services-grpc-categories:latest
+      - name: Pull Categories Migrations Image
+        run: docker pull kaleido-modules-services-grpc-categories-migrations:latest
       - name: Run integration tests
         run: dotnet test
         working-directory: src/Kaleido.Modules.Services.Grpc.Views.Tests.Integrations
