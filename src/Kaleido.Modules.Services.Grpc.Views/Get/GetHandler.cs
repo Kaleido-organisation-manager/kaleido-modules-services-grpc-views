@@ -4,6 +4,7 @@ using Grpc.Core;
 using Kaleido.Common.Services.Grpc.Exceptions;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Grpc.Views;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.Common.Validators;
 
@@ -32,14 +33,13 @@ public class GetHandler : IGetHandler
     public async Task<ViewResponse> HandleAsync(ViewRequest request, CancellationToken cancellationToken = default)
     {
 
-        EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>? viewResult = null;
-        IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>> categoryViewLinkResults = Enumerable.Empty<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
+        ManagerResponse? managerResponse = null;
 
         try
         {
             _keyValidator.ValidateAndThrow(request.Key);
             var key = Guid.Parse(request.Key);
-            (viewResult, categoryViewLinkResults) = await _getManager.GetAsync(key, cancellationToken);
+            managerResponse = await _getManager.GetAsync(key, cancellationToken);
         }
         catch (FluentValidation.ValidationException ex)
         {
@@ -54,13 +54,13 @@ public class GetHandler : IGetHandler
             throw new RpcException(new Status(StatusCode.Internal, ex.Message, ex));
         }
 
-        if (viewResult is null)
+        if (managerResponse.State == ManagerResponseState.NotFound)
         {
             throw new RpcException(new Status(StatusCode.NotFound, "View not found"));
         }
 
-        var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(viewResult);
-        viewWithCategoriesResult.Entity.Categories = categoryViewLinkResults;
+        var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(managerResponse.View);
+        viewWithCategoriesResult.Entity.Categories = managerResponse.CategoryViewLinks ?? [];
 
         var response = _mapper.Map<ViewResponse>(viewWithCategoriesResult);
         return response;

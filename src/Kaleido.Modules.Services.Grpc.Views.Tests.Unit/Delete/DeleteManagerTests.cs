@@ -2,11 +2,11 @@ using System.Linq.Expressions;
 using Kaleido.Common.Services.Grpc.Exceptions;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.Delete;
 using Moq;
 using Moq.AutoMock;
-using Xunit;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Delete;
 
@@ -35,8 +35,7 @@ public class DeleteManagerTests
         var result = await _sut.DeleteAsync(key);
 
         // Assert
-        Assert.Null(result.Item1);
-        Assert.Empty(result.Item2);
+        Assert.Equal(ManagerResponseState.NotFound, result.State);
     }
 
     [Fact]
@@ -79,7 +78,10 @@ public class DeleteManagerTests
 
         var categoryViewLinkLifecycleHandlerMock = _mocker.GetMock<IEntityLifecycleHandler<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
         categoryViewLinkLifecycleHandlerMock
-            .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+            .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(),
+                It.IsAny<Expression<Func<CategoryViewLinkRevisionEntity, bool>>>(),
+                It.IsAny<Guid?>(),
+                It.IsAny<CancellationToken>()))
             .ReturnsAsync(categoryViewLinkResults);
 
         categoryViewLinkLifecycleHandlerMock
@@ -91,9 +93,9 @@ public class DeleteManagerTests
         var result = await _sut.DeleteAsync(key);
 
         // Assert
-        Assert.NotNull(result.Item1);
-        Assert.Equal(viewResult, result.Item1);
-        Assert.Equal(2, result.Item2.Count());
-        Assert.Equal(categoryViewLinkResults, result.Item2);
+        Assert.NotNull(result.View);
+        Assert.Equal(viewResult, result.View);
+        Assert.Equal(2, result.CategoryViewLinks!.Count());
+        Assert.Equal(categoryViewLinkResults, result.CategoryViewLinks);
     }
 }

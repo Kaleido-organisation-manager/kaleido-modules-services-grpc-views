@@ -9,7 +9,7 @@ service GrpcViews {
     rpc DeleteView(ViewRequest) returns (ViewResponse);
     rpc GetAllViewRevisions(ViewRequest) returns (ViewListResponse);
     rpc GetAllViews(EmptyRequest) returns (ViewListResponse);
-    rpc GetAllViewsByName(GetAllViewsByNameRequest) returns (ViewListResponse);
+    rpc GetAllViewsFiltered(GetAllViewsFilteredRequest) returns (ViewListResponse);
     rpc GetView(ViewRequest) returns (ViewResponse);
     rpc GetViewRevision(GetViewRevisionRequest) returns (ViewResponse);
     rpc UpdateView(ViewActionRequest) returns (ViewResponse);

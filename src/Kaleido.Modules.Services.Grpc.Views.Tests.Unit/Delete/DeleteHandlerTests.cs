@@ -2,7 +2,9 @@ using AutoMapper;
 using Grpc.Core;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Grpc.Views;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
+using Kaleido.Modules.Services.Grpc.Views.Common.Validators;
 using Kaleido.Modules.Services.Grpc.Views.Delete;
 using Moq;
 using Xunit;
@@ -19,7 +21,7 @@ public class DeleteHandlerTests
     {
         _mapperMock = new Mock<IMapper>();
         _deleteManagerMock = new Mock<IDeleteManager>();
-        _sut = new DeleteHandler(_mapperMock.Object, _deleteManagerMock.Object);
+        _sut = new DeleteHandler(_mapperMock.Object, _deleteManagerMock.Object, new KeyValidator());
     }
 
     [Fact]
@@ -29,7 +31,7 @@ public class DeleteHandlerTests
         var request = new ViewRequest { Key = Guid.NewGuid().ToString() };
         _deleteManagerMock
             .Setup(x => x.DeleteAsync(Guid.Parse(request.Key), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((null, Array.Empty<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>()));
+            .ReturnsAsync(new ManagerResponse(ManagerResponseState.NotFound));
 
         // Act
         var act = () => _sut.HandleAsync(request);
@@ -53,7 +55,7 @@ public class DeleteHandlerTests
 
         _deleteManagerMock
             .Setup(x => x.DeleteAsync(Guid.Parse(request.Key), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((viewResult, categoryLinks));
+            .ReturnsAsync(new ManagerResponse(viewResult, categoryLinks));
 
         var viewWithCategoriesResult = new EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>
         {

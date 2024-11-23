@@ -18,7 +18,7 @@ public class CreateManager : ICreateManager
         _categoryViewLinkLifecycleHandler = categoryViewLinkLifecycleHandler;
     }
 
-    public async Task<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)> CreateAsync(ViewEntity viewEntity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken = default)
+    public async Task<ManagerResponse> CreateAsync(ViewEntity viewEntity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken = default)
     {
         var timestamp = DateTime.UtcNow;
         var viewRevision = new ViewRevisionEntity
@@ -49,6 +49,6 @@ public class CreateManager : ICreateManager
         var viewResult = await _viewLifecycleHandler.CreateAsync(viewEntity, viewRevision, cancellationToken: cancellationToken);
 
 
-        return (viewResult, resultLinks);
+        return new ManagerResponse(viewResult, resultLinks);
     }
 }

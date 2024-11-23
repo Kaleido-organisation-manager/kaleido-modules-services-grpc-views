@@ -51,11 +51,19 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAll
             };
 
             _viewLifecycleHandlerMock
-                .Setup(x => x.GetAllAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.FindAllAsync(
+                    It.IsAny<Expression<Func<ViewEntity, bool>>>(),
+                    It.IsAny<Expression<Func<ViewRevisionEntity, bool>>>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(viewEntities);
 
             _categoryViewLinkLifecycleHandlerMock
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.FindAllAsync(
+                    It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(),
+                    It.IsAny<Expression<Func<CategoryViewLinkRevisionEntity, bool>>>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(categoryViewLinkResults);
 
             // Act
@@ -64,8 +72,8 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAll
             // Assert
             Assert.NotNull(result);
             Assert.NotEmpty(result);
-            Assert.Equal(viewEntities.First(), result.First().Item1);
-            Assert.Equal(categoryViewLinkResults, result.First().Item2);
+            Assert.Equal(viewEntities.First(), result.First().View);
+            Assert.Equal(categoryViewLinkResults.Count, result.First().CategoryViewLinks!.Count());
         }
 
         [Fact]
@@ -93,7 +101,11 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAll
         {
             // Arrange
             _viewLifecycleHandlerMock
-                .Setup(x => x.GetAllAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.FindAllAsync(
+                    It.IsAny<Expression<Func<ViewEntity, bool>>>(),
+                    It.IsAny<Expression<Func<ViewRevisionEntity, bool>>>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("View lifecycle handler error"));
 
             // Act & Assert
@@ -115,12 +127,20 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAll
             };
 
             _viewLifecycleHandlerMock
-                .Setup(x => x.GetAllAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.FindAllAsync(
+                    It.IsAny<Expression<Func<ViewEntity, bool>>>(),
+                    It.IsAny<Expression<Func<ViewRevisionEntity, bool>>>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(viewEntities);
 
             // Arrange
             _categoryViewLinkLifecycleHandlerMock
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.FindAllAsync(
+                    It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(),
+                    It.IsAny<Expression<Func<CategoryViewLinkRevisionEntity, bool>>>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Category view link lifecycle handler error"));
 
             // Act & Assert
@@ -149,44 +169,6 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAll
 
             // Assert
             Assert.Empty(result);
-        }
-
-        [Fact]
-        public async Task GetAllAsync_DoesNotIncludeDeletedCategoryViewLinks()
-        {
-            // Arrange
-            var viewEntities = new List<EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>>
-            {
-                new EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>
-                {
-                    Entity = new ViewEntity { /* Initialize properties */ },
-                    Revision = new ViewRevisionEntity { /* Initialize properties */ }
-                }
-            };
-
-            _viewLifecycleHandlerMock
-                .Setup(x => x.GetAllAsync(It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(viewEntities);
-
-            var categoryViewLinkResults = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>
-            {
-                new EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>
-                {
-                    Entity = new CategoryViewLinkEntity { /* Initialize properties */ },
-                    Revision = new CategoryViewLinkRevisionEntity { Action = RevisionAction.Deleted }
-                }
-            };
-
-            _categoryViewLinkLifecycleHandlerMock
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync(categoryViewLinkResults);
-
-            // Act
-            var result = await _sut.GetAllAsync(CancellationToken.None);
-
-            // Assert
-            Assert.Single(result);
-            Assert.Empty(result.First().Item2);
         }
     }
 }

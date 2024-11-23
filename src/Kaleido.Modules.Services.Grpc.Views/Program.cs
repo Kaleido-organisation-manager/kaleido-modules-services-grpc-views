@@ -70,8 +70,8 @@ builder.Services.AddScoped<IGetAllManager, GetAllManager>();
 builder.Services.AddScoped<IGetAllHandler, GetAllHandler>();
 
 // Get All By Name
-builder.Services.AddScoped<IGetAllByNameManager, GetAllByNameManager>();
-builder.Services.AddScoped<IGetAllByNameHandler, GetAllByNameHandler>();
+builder.Services.AddScoped<IGetAllFilteredManager, GetAllFilteredManager>();
+builder.Services.AddScoped<IGetAllFilteredHandler, GetAllFilteredHandler>();
 
 // Get All Revisions
 builder.Services.AddScoped<IGetAllRevisionsManager, GetAllRevisionsManager>();

@@ -54,10 +54,10 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAll
                 }
             };
 
-            var managerResult = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>();
+            var managerResult = new List<ManagerResponse>();
             foreach (var view in expectedViews)
             {
-                managerResult.Add((view, expectedCategoryViewLinks));
+                managerResult.Add(new ManagerResponse(view, expectedCategoryViewLinks));
             }
 
             _getAllManagerMock.Setup(m => m.GetAllAsync(It.IsAny<CancellationToken>()))

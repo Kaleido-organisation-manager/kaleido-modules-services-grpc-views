@@ -22,7 +22,7 @@
     <PackageReference Include="FluentValidation" Version="11.10.0" />
     <PackageReference Include="Grpc.AspNetCore" Version="2.57.0" />
     <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.66.0" />
-    <PackageReference Include="Kaleido.Common.Services.Grpc" Version="0.1.0-alpha.26" />
+    <PackageReference Include="Kaleido.Common.Services.Grpc" Version="0.1.0-alpha.27" />
     <PackageReference Include="Kaleido.Modules.Services.Grpc.Categories.Client" Version="0.1.0-alpha.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>

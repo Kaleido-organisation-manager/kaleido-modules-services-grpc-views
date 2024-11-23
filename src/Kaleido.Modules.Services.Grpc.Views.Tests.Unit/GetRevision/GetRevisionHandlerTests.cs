@@ -4,6 +4,7 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Grpc.Views;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Mappers;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.Common.Validators;
@@ -51,7 +52,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetRevision
             };
 
             _getRevisionManagerMock.Setup(m => m.GetViewRevision(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((viewResult, categoryViewLinkResults));
+                .ReturnsAsync(new ManagerResponse(viewResult, categoryViewLinkResults));
 
             // Act
             var response = await _sut.HandleAsync(request, CancellationToken.None);
@@ -81,7 +82,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetRevision
             var request = new GetViewRevisionRequest { Key = key, CreatedAt = Timestamp.FromDateTime(DateTime.UtcNow) };
 
             _getRevisionManagerMock.Setup(m => m.GetViewRevision(It.IsAny<Guid>(), It.IsAny<DateTime>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((null, Enumerable.Empty<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>()));
+                .ReturnsAsync(new ManagerResponse(ManagerResponseState.NotFound));
 
             // Act & Assert
             var exception = await Assert.ThrowsAsync<RpcException>(() => _sut.HandleAsync(request, CancellationToken.None));

@@ -43,9 +43,9 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllRevisions
             var viewRevisionEntity = new ViewRevisionEntity { /* Initialize properties */ };
             var categoryViewLinkResults = new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
 
-            var result = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>
+            var result = new List<ManagerResponse>
             {
-                (new EntityLifeCycleResult<ViewEntity, ViewRevisionEntity> { Entity = viewEntity, Revision = viewRevisionEntity }, categoryViewLinkResults)
+                new ManagerResponse(new EntityLifeCycleResult<ViewEntity, ViewRevisionEntity> { Entity = viewEntity, Revision = viewRevisionEntity }, categoryViewLinkResults)
             };
 
             _getAllRevisionsManagerMock.Setup(m => m.GetAllRevisionAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))

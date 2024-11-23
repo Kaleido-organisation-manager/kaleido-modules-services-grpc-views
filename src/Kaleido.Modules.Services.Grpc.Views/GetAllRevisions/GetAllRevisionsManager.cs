@@ -23,7 +23,7 @@ public class GetAllRevisionsManager : IGetAllRevisionsManager
         _mapper = mapper;
     }
 
-    public async Task<IEnumerable<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>> GetAllRevisionAsync(Guid key, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ManagerResponse>> GetAllRevisionAsync(Guid key, CancellationToken cancellationToken)
     {
         var viewEntityRevisions = await _viewLifecycleHandler.GetAllAsync(key, cancellationToken: cancellationToken);
         var categoryViewLinks = await _categoryViewLinkLifecycleHandler.FindAllAsync(x => x.ViewKey == key, cancellationToken: cancellationToken);
@@ -37,7 +37,7 @@ public class GetAllRevisionsManager : IGetAllRevisionsManager
             .ToList();
 
 
-        var compositeRevisions = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>();
+        var compositeRevisions = new List<ManagerResponse>();
 
         foreach (var timeSlice in historicTimeSlices)
         {
@@ -56,32 +56,33 @@ public class GetAllRevisionsManager : IGetAllRevisionsManager
 
             if (viewEntityRevision != null)
             {
-                compositeRevisions.Add((viewEntityRevision, categoryViewLinksRevisions));
+                compositeRevisions.Add(new ManagerResponse(viewEntityRevision, categoryViewLinksRevisions));
             }
         }
 
-        var results = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>();
+        var results = new List<ManagerResponse>();
 
         for (int i = 0; i < compositeRevisions.Count; i++)
         {
-            var (viewEntityRevision, categoryViewLinksRevisions) = compositeRevisions[i];
+            var managerResponse = compositeRevisions[i];
 
             EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>? previousViewEntityRevision = null;
             IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>? previousCategoryViewLinksRevisions = null;
 
             if (i < compositeRevisions.Count - 1)
             {
-                (previousViewEntityRevision, previousCategoryViewLinksRevisions) = compositeRevisions[i + 1];
+                var nextManagerResponse = compositeRevisions[i + 1];
+                previousViewEntityRevision = nextManagerResponse.View;
+                previousCategoryViewLinksRevisions = nextManagerResponse.CategoryViewLinks;
             }
 
-            if (previousViewEntityRevision != null && previousViewEntityRevision.Revision.Revision == viewEntityRevision.Revision.Revision)
+            if (previousViewEntityRevision != null && previousViewEntityRevision.Revision.Revision == managerResponse.View?.Revision.Revision)
             {
-                viewEntityRevision = _mapper.Map<EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>>(viewEntityRevision);
-                viewEntityRevision.Revision.Action = RevisionAction.Unmodified;
+                managerResponse.View.Revision.Action = RevisionAction.Unmodified;
             }
 
             var previousDeletedCategories = previousCategoryViewLinksRevisions?.Where(x => x.Revision.Action == RevisionAction.Deleted).ToList() ?? new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>();
-            var resultingCategories = categoryViewLinksRevisions
+            var resultingCategories = managerResponse.CategoryViewLinks?
                 .Where(x => !previousDeletedCategories.Any(y => y.Key == x.Key))
                 .Select(x =>
                 {
@@ -93,7 +94,7 @@ public class GetAllRevisionsManager : IGetAllRevisionsManager
                 })
                 .ToList();
 
-            results.Add((viewEntityRevision, resultingCategories));
+            results.Add(new ManagerResponse(managerResponse.View!, resultingCategories!));
         }
 
         return results;

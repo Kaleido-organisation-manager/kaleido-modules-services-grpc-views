@@ -37,10 +37,10 @@ public class UpdateHandler : IUpdateHandler
 
             var key = Guid.Parse(request.Key);
             var viewEntity = _mapper.Map<ViewEntity>(request.View);
-            var (viewResult, categoryViewLinkResults) = await _updateManager.UpdateAsync(key, viewEntity, request.View.Categories, cancellationToken);
+            var managerResponse = await _updateManager.UpdateAsync(key, viewEntity, request.View.Categories, cancellationToken);
 
-            var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(viewResult);
-            viewWithCategoriesResult.Entity.Categories = categoryViewLinkResults;
+            var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(managerResponse.View);
+            viewWithCategoriesResult.Entity.Categories = managerResponse.CategoryViewLinks ?? [];
 
             var response = _mapper.Map<ViewResponse>(viewWithCategoriesResult);
             return response;
@@ -49,11 +49,7 @@ public class UpdateHandler : IUpdateHandler
         {
             throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message, ex));
         }
-        catch (EntityNotFoundException ex)
-        {
-            throw new RpcException(new Status(StatusCode.NotFound, ex.Message, ex));
-        }
-        catch (RevisionNotFoundException ex)
+        catch (Exception ex) when (ex is EntityNotFoundException or RevisionNotFoundException)
         {
             throw new RpcException(new Status(StatusCode.NotFound, ex.Message, ex));
         }

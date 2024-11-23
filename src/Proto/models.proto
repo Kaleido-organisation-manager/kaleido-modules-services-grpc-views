@@ -51,7 +51,7 @@ message ViewListResponse {
     repeated ViewResponse views = 1;
 }
 
-message GetAllViewsByNameRequest {
+message GetAllViewsFilteredRequest {
     string name = 1;
 }
 

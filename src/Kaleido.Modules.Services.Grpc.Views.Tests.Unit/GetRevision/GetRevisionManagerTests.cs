@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.GetRevision;
 using Moq;
@@ -61,13 +62,13 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetRevision
             var result = await _sut.GetViewRevision(key, createdAt, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result.Item1);
-            Assert.Equal(viewResult, result.Item1);
-            Assert.Equal(categoryViewLinkResults, result.Item2);
+            Assert.NotNull(result.View);
+            Assert.Equal(viewResult, result.View);
+            Assert.Equal(categoryViewLinkResults, result.CategoryViewLinks);
         }
 
         [Fact]
-        public async Task GetViewRevision_ReturnsEmptyLinks_WhenViewDoesNotExist()
+        public async Task GetViewRevision_ReturnsNotFound_WhenViewDoesNotExist()
         {
             // Arrange
             var key = Guid.NewGuid();
@@ -81,8 +82,9 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetRevision
             var result = await _sut.GetViewRevision(key, createdAt, CancellationToken.None);
 
             // Assert
-            Assert.Null(result.Item1);
-            Assert.Empty(result.Item2);
+            Assert.Equal(ManagerResponseState.NotFound, result.State);
+            Assert.Null(result.View);
+            Assert.Null(result.CategoryViewLinks);
         }
 
         [Fact]

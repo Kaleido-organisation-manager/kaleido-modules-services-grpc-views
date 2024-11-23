@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 {
-    [DbContext(typeof(ViewRevisionDbContext))]
-    [Migration("20241109160154_ViewRevision")]
-    partial class ViewRevision
+    [DbContext(typeof(CategoryViewLinkRevisionEntityDbContext))]
+    [Migration("20241122000316_CategoryViewLinkRevisionEntity")]
+    partial class CategoryViewLinkRevisionEntity
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Kaleido.Modules.Services.Grpc.Views.Common.Models.ViewRevisionEntity", b =>
+            modelBuilder.Entity("Kaleido.Modules.Services.Grpc.Views.Common.Models.CategoryViewLinkRevisionEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
@@ -47,11 +47,14 @@ namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
                     b.Property<int>("Revision")
                         .HasColumnType("int");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Key");
 
-                    b.ToTable("ViewRevisions", (string)null);
+                    b.ToTable("CategoryViewLinkRevisions", (string)null);
                 });
 #pragma warning restore 612, 618
         }

@@ -24,10 +24,10 @@ public class GetAllHandler : IGetAllHandler
             var results = await _getAllManager.GetAllAsync(cancellationToken);
 
             var response = new ViewListResponse();
-            foreach (var (view, categoryViewLinks) in results)
+            foreach (var managerResponse in results)
             {
-                var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(view);
-                viewWithCategoriesResult.Entity.Categories = categoryViewLinks;
+                var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(managerResponse.View);
+                viewWithCategoriesResult.Entity.Categories = managerResponse.CategoryViewLinks ?? [];
                 response.Views.Add(_mapper.Map<ViewResponse>(viewWithCategoriesResult));
             }
 
