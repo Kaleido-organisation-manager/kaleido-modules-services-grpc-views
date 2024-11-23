@@ -2,6 +2,7 @@ using System.Linq.Expressions;
 using Kaleido.Common.Services.Grpc.Constants;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.Get;
 using Moq;
@@ -52,20 +53,23 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Get
                 .ReturnsAsync(viewResult);
 
             _categoryViewLinkLifecycleHandlerMock
-                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(), It.IsAny<Guid?>(), It.IsAny<CancellationToken>()))
+                .Setup(x => x.FindAllAsync(It.IsAny<Expression<Func<CategoryViewLinkEntity, bool>>>(),
+                    It.IsAny<Expression<Func<CategoryViewLinkRevisionEntity, bool>>>(),
+                    It.IsAny<Guid?>(),
+                    It.IsAny<CancellationToken>()))
                 .ReturnsAsync(categoryViewLinkResults);
 
             // Act
             var result = await _sut.GetAsync(key, CancellationToken.None);
 
             // Assert
-            Assert.NotNull(result.Item1);
-            Assert.Equal(viewResult, result.Item1);
-            Assert.Equal(categoryViewLinkResults, result.Item2);
+            Assert.NotNull(result.View);
+            Assert.Equal(viewResult, result.View);
+            Assert.Equal(categoryViewLinkResults.Count, result.CategoryViewLinks!.Count());
         }
 
         [Fact]
-        public async Task GetAsync_DeletedView_ReturnsNullAndEmptyLinks()
+        public async Task GetAsync_DeletedView_ReturnsNotFound()
         {
             // Arrange
             var key = Guid.NewGuid();
@@ -79,12 +83,11 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Get
             var result = await _sut.GetAsync(key, CancellationToken.None);
 
             // Assert
-            Assert.Null(result.Item1);
-            Assert.Empty(result.Item2);
+            Assert.Equal(ManagerResponseState.NotFound, result.State);
         }
 
         [Fact]
-        public async Task GetAsync_ViewNotFound_ReturnsNullAndEmptyLinks()
+        public async Task GetAsync_ViewNotFound_ReturnsNotFound()
         {
             // Arrange
             var key = Guid.NewGuid();
@@ -96,8 +99,9 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Get
             var result = await _sut.GetAsync(key, CancellationToken.None);
 
             // Assert
-            Assert.Null(result.Item1);
-            Assert.Empty(result.Item2);
+            Assert.Equal(ManagerResponseState.NotFound, result.State);
+            Assert.Null(result.View);
+            Assert.Null(result.CategoryViewLinks);
         }
     }
 }

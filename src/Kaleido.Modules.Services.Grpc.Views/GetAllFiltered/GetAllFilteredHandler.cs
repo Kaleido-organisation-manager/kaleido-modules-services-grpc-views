@@ -1,4 +1,5 @@
 using AutoMapper;
+using FluentValidation;
 using Grpc.Core;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Grpc.Views;
@@ -7,17 +8,17 @@ using Kaleido.Modules.Services.Grpc.Views.Common.Validators;
 
 namespace Kaleido.Modules.Services.Grpc.Views.GetAllByName;
 
-public class GetAllByNameHandler : IGetAllByNameHandler
+public class GetAllFilteredHandler : IGetAllFilteredHandler
 {
-    private readonly IGetAllByNameManager _getAllByNameManager;
+    private readonly IGetAllFilteredManager _getAllByNameManager;
     private readonly IMapper _mapper;
-    private readonly ILogger<GetAllByNameHandler> _logger;
+    private readonly ILogger<GetAllFilteredHandler> _logger;
     private readonly NameValidator _nameValidator;
 
-    public GetAllByNameHandler(
-        IGetAllByNameManager getAllByNameManager,
+    public GetAllFilteredHandler(
+        IGetAllFilteredManager getAllByNameManager,
         IMapper mapper,
-        ILogger<GetAllByNameHandler> logger,
+        ILogger<GetAllFilteredHandler> logger,
         NameValidator nameValidator
         )
     {
@@ -27,21 +28,26 @@ public class GetAllByNameHandler : IGetAllByNameHandler
         _nameValidator = nameValidator;
     }
 
-    public async Task<ViewListResponse> HandleAsync(GetAllViewsByNameRequest request, CancellationToken cancellationToken = default)
+    public async Task<ViewListResponse> HandleAsync(GetAllViewsFilteredRequest request, CancellationToken cancellationToken = default)
     {
         try
         {
+            _nameValidator.ValidateAndThrow(request.Name);
             var results = await _getAllByNameManager.GetAllAsync(request.Name, cancellationToken);
 
             var response = new ViewListResponse();
-            foreach (var (view, categoryViewLinks) in results)
+            foreach (var managerResponse in results)
             {
-                var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(view);
-                viewWithCategoriesResult.Entity.Categories = categoryViewLinks;
+                var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(managerResponse.View);
+                viewWithCategoriesResult.Entity.Categories = managerResponse.CategoryViewLinks ?? [];
                 response.Views.Add(_mapper.Map<ViewResponse>(viewWithCategoriesResult));
             }
 
             return response;
+        }
+        catch (ValidationException ex)
+        {
+            throw new RpcException(new Status(StatusCode.InvalidArgument, ex.Message, ex));
         }
         catch (Exception ex)
         {

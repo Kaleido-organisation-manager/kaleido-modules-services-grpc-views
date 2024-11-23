@@ -1,10 +1,8 @@
-using System.Text.Json;
 using AutoMapper;
 using FluentValidation;
 using Grpc.Core;
 using Kaleido.Common.Services.Grpc.Models;
 using Kaleido.Grpc.Views;
-using Kaleido.Modules.Services.Grpc.Views.Common.Mappers;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 using Kaleido.Modules.Services.Grpc.Views.Common.Validators;
 
@@ -34,10 +32,10 @@ public class CreateHandler : ICreateHandler
             await _validator.ValidateAndThrowAsync(request, cancellationToken);
             var view = _mapper.Map<ViewEntity>(request);
 
-            var (viewResult, resultLinks) = await _createManager.CreateAsync(view, request.Categories, cancellationToken);
+            var managerResponse = await _createManager.CreateAsync(view, request.Categories, cancellationToken);
 
-            var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(viewResult);
-            viewWithCategoriesResult.Entity.Categories = resultLinks;
+            var viewWithCategoriesResult = _mapper.Map<EntityLifeCycleResult<ViewWithCategories, BaseRevisionEntity>>(managerResponse.View);
+            viewWithCategoriesResult.Entity.Categories = managerResponse.CategoryViewLinks ?? [];
 
             var response = _mapper.Map<ViewResponse>(viewWithCategoriesResult);
             return response;

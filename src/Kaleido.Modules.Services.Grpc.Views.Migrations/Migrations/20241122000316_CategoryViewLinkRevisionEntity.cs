@@ -6,13 +6,13 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 {
     /// <inheritdoc />
-    public partial class ViewRevision : Migration
+    public partial class CategoryViewLinkRevisionEntity : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "ViewRevisions",
+                name: "CategoryViewLinkRevisions",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
@@ -20,16 +20,17 @@ namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
                     EntityId = table.Column<Guid>(type: "uuid", nullable: false),
                     Revision = table.Column<int>(type: "int", nullable: false),
                     Action = table.Column<string>(type: "varchar(8)", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_ViewRevisions", x => x.Id);
+                    table.PrimaryKey("PK_CategoryViewLinkRevisions", x => x.Id);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_ViewRevisions_Key",
-                table: "ViewRevisions",
+                name: "IX_CategoryViewLinkRevisions_Key",
+                table: "CategoryViewLinkRevisions",
                 column: "Key");
         }
 
@@ -37,7 +38,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "ViewRevisions");
+                name: "CategoryViewLinkRevisions");
         }
     }
 }

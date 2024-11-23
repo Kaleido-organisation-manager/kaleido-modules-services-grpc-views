@@ -57,10 +57,10 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Create
             var result = await _sut.CreateAsync(viewEntity, categoryKeys);
 
             // Assert
-            Assert.NotNull(result.Item1);
-            Assert.NotNull(result.Item2);
-            Assert.Equal(viewResult, result.Item1);
-            Assert.Equal(categoryViewLinkResults, result.Item2);
+            Assert.NotNull(result.View);
+            Assert.NotNull(result.CategoryViewLinks);
+            Assert.Equal(viewResult, result.View);
+            Assert.Equal(categoryViewLinkResults, result.CategoryViewLinks);
             _viewLifecycleHandlerMock.Verify(x => x.CreateAsync(viewEntity, It.IsAny<ViewRevisionEntity?>(), It.IsAny<CancellationToken>()), Times.Once);
             _categoryViewLinkLifecycleHandlerMock.Verify(x => x.CreateAsync(It.IsAny<CategoryViewLinkEntity>(), It.IsAny<CategoryViewLinkRevisionEntity?>(), It.IsAny<CancellationToken>()), Times.Exactly(categoryKeys.Count));
         }

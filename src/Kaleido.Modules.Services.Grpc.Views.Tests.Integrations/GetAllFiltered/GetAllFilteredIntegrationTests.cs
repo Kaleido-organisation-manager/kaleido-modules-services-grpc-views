@@ -5,11 +5,11 @@ using Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.Fixtures;
 namespace Kaleido.Modules.Services.Grpc.Views.Tests.Integrations.GetAllByName;
 
 [Collection("Infrastructure collection")]
-public class GetAllByNameIntegrationTests
+public class GetAllFilteredIntegrationTests
 {
     private readonly InfrastructureFixture _fixture;
 
-    public GetAllByNameIntegrationTests(InfrastructureFixture fixture)
+    public GetAllFilteredIntegrationTests(InfrastructureFixture fixture)
     {
         _fixture = fixture;
         _fixture.ClearDatabase().Wait();
@@ -41,10 +41,10 @@ public class GetAllByNameIntegrationTests
         createView.Categories.AddRange(categoryKeys);
         await _fixture.Client.CreateViewAsync(createView);
 
-        var request = new GetAllViewsByNameRequest { Name = "Test View" };
+        var request = new GetAllViewsFilteredRequest { Name = "Test View" };
 
         // Act
-        var response = await _fixture.Client.GetAllViewsByNameAsync(request);
+        var response = await _fixture.Client.GetAllViewsFilteredAsync(request);
 
         // Assert
         Assert.NotNull(response);
@@ -56,10 +56,10 @@ public class GetAllByNameIntegrationTests
     public async Task GetAllByName_WhenNoViewsExist_ReturnsEmptyResponse()
     {
         // Arrange
-        var request = new GetAllViewsByNameRequest { Name = "Nonexistent View" };
+        var request = new GetAllViewsFilteredRequest { Name = "Nonexistent View" };
 
         // Act
-        var response = await _fixture.Client.GetAllViewsByNameAsync(request);
+        var response = await _fixture.Client.GetAllViewsFilteredAsync(request);
 
         // Assert
         Assert.NotNull(response);
@@ -95,10 +95,10 @@ public class GetAllByNameIntegrationTests
         var deleteViewRequest = new ViewRequest { Key = createdView.Key };
         await _fixture.Client.DeleteViewAsync(deleteViewRequest);
 
-        var request = new GetAllViewsByNameRequest { Name = "Test View to Delete" };
+        var request = new GetAllViewsFilteredRequest { Name = "Test View to Delete" };
 
         // Act
-        var response = await _fixture.Client.GetAllViewsByNameAsync(request);
+        var response = await _fixture.Client.GetAllViewsFilteredAsync(request);
 
         // Assert
         Assert.NotNull(response);
@@ -131,10 +131,10 @@ public class GetAllByNameIntegrationTests
         createView.Categories.AddRange(categoryKeys);
         await _fixture.Client.CreateViewAsync(createView);
 
-        var request = new GetAllViewsByNameRequest { Name = "Test" };
+        var request = new GetAllViewsFilteredRequest { Name = "Test" };
 
         // Act
-        var response = await _fixture.Client.GetAllViewsByNameAsync(request);
+        var response = await _fixture.Client.GetAllViewsFilteredAsync(request);
 
         // Assert
         Assert.NotNull(response);
@@ -168,10 +168,10 @@ public class GetAllByNameIntegrationTests
         createView.Categories.AddRange(categoryKeys);
         await _fixture.Client.CreateViewAsync(createView);
 
-        var request = new GetAllViewsByNameRequest { Name = "test" };
+        var request = new GetAllViewsFilteredRequest { Name = "test" };
 
         // Act
-        var response = await _fixture.Client.GetAllViewsByNameAsync(request);
+        var response = await _fixture.Client.GetAllViewsFilteredAsync(request);
 
         // Assert
         Assert.NotNull(response);

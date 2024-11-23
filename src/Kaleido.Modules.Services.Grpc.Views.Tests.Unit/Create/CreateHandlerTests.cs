@@ -37,23 +37,28 @@ public class CreateHandlerTests
         _createManagerMock = _mocker.GetMock<ICreateManager>();
 
         _createManagerMock.Setup(m => m.CreateAsync(It.IsAny<ViewEntity>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((ViewEntity entity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken) => (new EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>
-            {
-                Entity = entity,
-                Revision = new ViewRevisionEntity()
-                {
-                    Action = RevisionAction.Created,
-                    CreatedAt = DateTime.UtcNow,
-                    Key = Guid.NewGuid(),
-                    EntityId = Guid.NewGuid(),
-                    Id = Guid.NewGuid(),
-                    Revision = 1
-                }
-            }, categoryKeys.Select(category => new EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>
-            {
-                Entity = new CategoryViewLinkEntity(),
-                Revision = new CategoryViewLinkRevisionEntity()
-            })));
+            .ReturnsAsync((ViewEntity entity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken) => (
+                new ManagerResponse(
+                    new EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>
+                    {
+                        Entity = entity,
+                        Revision = new ViewRevisionEntity()
+                        {
+                            Action = RevisionAction.Created,
+                            CreatedAt = DateTime.UtcNow,
+                            Key = Guid.NewGuid(),
+                            EntityId = Guid.NewGuid(),
+                            Id = Guid.NewGuid(),
+                            Revision = 1
+                        }
+                    },
+                    categoryKeys.Select(category => new EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>
+                    {
+                        Entity = new CategoryViewLinkEntity(),
+                        Revision = new CategoryViewLinkRevisionEntity()
+                    })
+                )
+                ));
 
         _categoryClientMock = new Mock<GrpcCategoriesClient>();
         _categoryClientMock.Setup(c => c.GetCategoryAsync(It.IsAny<CategoryRequest>(), It.IsAny<Metadata>(), It.IsAny<DateTime?>(), It.IsAny<CancellationToken>()))

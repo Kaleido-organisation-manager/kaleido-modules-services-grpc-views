@@ -2,6 +2,7 @@ using Kaleido.Common.Services.Grpc.Constants;
 using Kaleido.Common.Services.Grpc.Exceptions;
 using Kaleido.Common.Services.Grpc.Handlers.Interfaces;
 using Kaleido.Common.Services.Grpc.Models;
+using Kaleido.Modules.Services.Grpc.Views.Common.Constants;
 using Kaleido.Modules.Services.Grpc.Views.Common.Models;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Update;
@@ -19,9 +20,9 @@ public class UpdateManager : IUpdateManager
         _categoryViewLinkHandler = categoryViewLinkHandler;
     }
 
-    public async Task<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)> UpdateAsync(Guid key, ViewEntity viewEntity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken = default)
+    public async Task<ManagerResponse> UpdateAsync(Guid key, ViewEntity viewEntity, IEnumerable<string> categoryKeys, CancellationToken cancellationToken = default)
     {
-        var timestamp = new DateTime(DateTime.UtcNow.Ticks - (DateTime.UtcNow.Ticks % TimeSpan.TicksPerMillisecond), DateTimeKind.Utc);
+        var timestamp = DateTime.UtcNow;
 
         var viewRevisionEntity = new ViewRevisionEntity
         {
@@ -41,11 +42,13 @@ public class UpdateManager : IUpdateManager
 
         if (viewResult == null)
         {
-            throw new EntityNotFoundException($"Could not find view entity with key {key} to update.");
+            return new ManagerResponse(ManagerResponseState.NotFound);
         }
 
-        var linkedCategories = await _categoryViewLinkHandler.FindAllAsync(link => link.ViewKey == key, cancellationToken: cancellationToken);
-        linkedCategories = linkedCategories.GroupBy(l => l.Key).Select(l => l.OrderByDescending(x => x.Revision.Revision).First());
+        var linkedCategories = await _categoryViewLinkHandler.FindAllAsync(
+            link => link.ViewKey == key,
+            revision => revision.Status == RevisionStatus.Active,
+            cancellationToken: cancellationToken);
 
         // Get latest revision of linked categories
         var latestLinkedCategories = linkedCategories.GroupBy(x => x.Key).Select(x => x.OrderByDescending(y => y.Revision.Revision).First());
@@ -114,6 +117,6 @@ public class UpdateManager : IUpdateManager
             return x;
         }));
 
-        return (viewResult, updatedCategories);
+        return new ManagerResponse(viewResult, updatedCategories);
     }
 }

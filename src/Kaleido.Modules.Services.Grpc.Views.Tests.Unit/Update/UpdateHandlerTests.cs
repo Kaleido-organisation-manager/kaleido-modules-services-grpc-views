@@ -62,7 +62,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.Update
             };
 
             _updateManagerMock.Setup(m => m.UpdateAsync(It.IsAny<Guid>(), It.IsAny<ViewEntity>(), It.IsAny<IEnumerable<string>>(), It.IsAny<CancellationToken>()))
-                .ReturnsAsync((viewResult, new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>()));
+                .ReturnsAsync(new ManagerResponse(viewResult, new List<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>()));
 
             // Act
             var response = await _sut.HandleAsync(request);

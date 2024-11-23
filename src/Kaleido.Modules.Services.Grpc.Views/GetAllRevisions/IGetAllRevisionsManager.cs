@@ -5,5 +5,5 @@ namespace Kaleido.Modules.Services.Grpc.Views.GetAllRevisions;
 
 public interface IGetAllRevisionsManager
 {
-    Task<IEnumerable<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>> GetAllRevisionAsync(Guid key, CancellationToken cancellationToken);
+    Task<IEnumerable<ManagerResponse>> GetAllRevisionAsync(Guid key, CancellationToken cancellationToken);
 }

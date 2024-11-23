@@ -68,8 +68,11 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllRevisions
             // Assert
             Assert.NotNull(result);
             Assert.Single(result);
-            Assert.Equal(viewRevisions.First().Revision.CreatedAt, result.First().Item1.Revision.CreatedAt);
-            Assert.Equal(categoryViewLinkRevisions.First().Revision.CreatedAt, result.First().Item2.First().Revision.CreatedAt);
+            Assert.NotNull(result.First().View);
+            Assert.Equal(viewRevisions.First().Revision.CreatedAt, result.First().View!.Revision.CreatedAt);
+            Assert.NotNull(result.First().CategoryViewLinks);
+            Assert.Single(result.First().CategoryViewLinks!);
+            Assert.Equal(categoryViewLinkRevisions.First().Revision.CreatedAt, result.First().CategoryViewLinks!.First().Revision.CreatedAt);
         }
 
         [Fact]

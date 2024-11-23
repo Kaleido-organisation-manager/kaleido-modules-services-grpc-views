@@ -15,31 +15,31 @@ using Xunit;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllByName
 {
-    public class GetAllByNameHandlerTests
+    public class GetAllFilteredHandlerTests
     {
         private readonly AutoMocker _mocker;
-        private readonly Mock<IGetAllByNameManager> _getAllByNameManagerMock;
-        private readonly GetAllByNameHandler _sut;
+        private readonly Mock<IGetAllFilteredManager> _getAllByNameManagerMock;
+        private readonly GetAllFilteredHandler _sut;
 
-        public GetAllByNameHandlerTests()
+        public GetAllFilteredHandlerTests()
         {
             _mocker = new AutoMocker();
-            _getAllByNameManagerMock = _mocker.GetMock<IGetAllByNameManager>();
+            _getAllByNameManagerMock = _mocker.GetMock<IGetAllFilteredManager>();
             var mapper = new MapperConfiguration(cfg =>
             {
                 cfg.AddProfile<ViewMappingProfile>();
             });
             _mocker.Use(mapper.CreateMapper());
             _mocker.Use(new NameValidator());
-            _mocker.Use(NullLogger<GetAllByNameHandler>.Instance);
-            _sut = _mocker.CreateInstance<GetAllByNameHandler>();
+            _mocker.Use(NullLogger<GetAllFilteredHandler>.Instance);
+            _sut = _mocker.CreateInstance<GetAllFilteredHandler>();
         }
 
         [Fact]
         public async Task HandleAsync_ValidRequest_ReturnsViewListResponse()
         {
             // Arrange
-            var request = new GetAllViewsByNameRequest { Name = "Test View" };
+            var request = new GetAllViewsFilteredRequest { Name = "Test View" };
             var expectedViews = new List<EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>>
             {
                 new EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>
@@ -58,10 +58,10 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllByName
                 }
             };
 
-            var managerResult = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>();
+            var managerResult = new List<ManagerResponse>();
             foreach (var view in expectedViews)
             {
-                managerResult.Add((view, expectedCategoryViewLinkResults));
+                managerResult.Add(new ManagerResponse(view, expectedCategoryViewLinkResults));
             }
 
             _getAllByNameManagerMock.Setup(m => m.GetAllAsync(request.Name, It.IsAny<CancellationToken>()))
@@ -80,9 +80,9 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllByName
         public async Task HandleAsync_NoViewsFound_ReturnsEmptyResponse()
         {
             // Arrange
-            var request = new GetAllViewsByNameRequest { Name = "Nonexistent View" };
+            var request = new GetAllViewsFilteredRequest { Name = "Nonexistent View" };
 
-            var managerResult = new List<(EntityLifeCycleResult<ViewEntity, ViewRevisionEntity>, IEnumerable<EntityLifeCycleResult<CategoryViewLinkEntity, CategoryViewLinkRevisionEntity>>)>();
+            var managerResult = new List<ManagerResponse>();
 
             _getAllByNameManagerMock.Setup(m => m.GetAllAsync(request.Name, It.IsAny<CancellationToken>()))
                 .ReturnsAsync(managerResult);
@@ -100,7 +100,7 @@ namespace Kaleido.Modules.Services.Grpc.Views.Tests.Unit.GetAllByName
         public async Task HandleAsync_UnexpectedException_ThrowsRpcException()
         {
             // Arrange
-            var request = new GetAllViewsByNameRequest { Name = "Test View" };
+            var request = new GetAllViewsFilteredRequest { Name = "Test View" };
             _getAllByNameManagerMock.Setup(m => m.GetAllAsync(request.Name, It.IsAny<CancellationToken>()))
                 .ThrowsAsync(new Exception("Unexpected error"));
 

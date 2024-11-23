@@ -11,9 +11,9 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 {
-    [DbContext(typeof(CategoryViewLinkEntityDbContext))]
-    [Migration("20241109160156_CategoryViewLinkEntity")]
-    partial class CategoryViewLinkEntity
+    [DbContext(typeof(ViewRevisionDbContext))]
+    [Migration("20241122000313_ViewRevision")]
+    partial class ViewRevision
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,22 +25,36 @@ namespace Kaleido.Modules.Services.Grpc.Views.Migrations.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Kaleido.Modules.Services.Grpc.Views.Common.Models.CategoryViewLinkEntity", b =>
+            modelBuilder.Entity("Kaleido.Modules.Services.Grpc.Views.Common.Models.ViewRevisionEntity", b =>
                 {
                     b.Property<Guid>("Id")
                         .HasColumnType("uuid");
 
-                    b.Property<string>("CategoryKey")
+                    b.Property<string>("Action")
+                        .IsRequired()
+                        .HasColumnType("varchar(8)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<Guid>("EntityId")
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("Key")
                         .IsRequired()
                         .HasColumnType("varchar(36)");
 
-                    b.Property<string>("ViewKey")
-                        .IsRequired()
-                        .HasColumnType("varchar(36)");
+                    b.Property<int>("Revision")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
 
                     b.HasKey("Id");
 
-                    b.ToTable("CategoryViewLinks", (string)null);
+                    b.HasIndex("Key");
+
+                    b.ToTable("ViewRevisions", (string)null);
                 });
 #pragma warning restore 612, 618
         }

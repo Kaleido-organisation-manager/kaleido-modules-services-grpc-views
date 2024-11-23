@@ -17,7 +17,7 @@ public class ViewsService : GrpcViews.GrpcViewsBase
     private readonly IDeleteHandler _deleteHandler;
     private readonly IGetHandler _getHandler;
     private readonly IGetAllHandler _getAllHandler;
-    private readonly IGetAllByNameHandler _getAllByNameHandler;
+    private readonly IGetAllFilteredHandler _getAllByNameHandler;
     private readonly IGetAllRevisionsHandler _getAllRevisionsHandler;
     private readonly IGetRevisionHandler _getRevisionHandler;
     private readonly IUpdateHandler _updateHandler;
@@ -27,7 +27,7 @@ public class ViewsService : GrpcViews.GrpcViewsBase
         IDeleteHandler deleteHandler,
         IGetHandler getHandler,
         IGetAllHandler getAllHandler,
-        IGetAllByNameHandler getAllByNameHandler,
+        IGetAllFilteredHandler getAllByNameHandler,
         IGetAllRevisionsHandler getAllRevisionsHandler,
         IGetRevisionHandler getRevisionHandler,
         IUpdateHandler updateHandler
@@ -63,7 +63,7 @@ public class ViewsService : GrpcViews.GrpcViewsBase
         return _getAllHandler.HandleAsync(request, context.CancellationToken);
     }
 
-    public override Task<ViewListResponse> GetAllViewsByName(GetAllViewsByNameRequest request, ServerCallContext context)
+    public override Task<ViewListResponse> GetAllViewsFiltered(GetAllViewsFilteredRequest request, ServerCallContext context)
     {
         return _getAllByNameHandler.HandleAsync(request, context.CancellationToken);
     }
